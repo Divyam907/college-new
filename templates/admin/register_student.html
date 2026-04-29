@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% block title %}Register Student – AttendanceAI{% endblock %}
+{% block page_title %}Register New Student{% endblock %}
+{% block extra_css %}
+<style>
+  #camera-feed { width:100%; border-radius:12px; background:#000; max-height:320px; object-fit:cover; }
+  .thumb { width:80px; height:80px; object-fit:cover; border-radius:8px; border:2px solid #dee2e6; }
+  .thumb-wrap { position:relative; display:inline-block; margin:4px; }
+  .thumb-del { position:absolute; top:-6px; right:-6px; width:20px; height:20px; border-radius:50%;
+               background:#dc3545; color:#fff; border:none; font-size:12px; line-height:20px;
+               text-align:center; cursor:pointer; padding:0; }
+</style>
+{% endblock %}
+{% block content %}
+
+<div class="row g-4">
+  <!-- Left: Form -->
+  <div class="col-md-5">
+    <div class="card p-4 h-100">
+      <h6 class="fw-bold mb-3"><i class="bi bi-person-vcard me-2 text-primary"></i>Student Details</h6>
+      <form id="reg-form" method="POST" action="{{ url_for('admin_register_student') }}">
+        <input type="hidden" name="photos" id="photos-input">
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Full Name <span class="text-danger">*</span></label>
+          <input type="text" name="name" id="student-name" class="form-control" placeholder="e.g. Rahul Sharma" required>
+        </div>
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label small fw-semibold">Roll No</label>
+            <input type="text" name="roll_no" class="form-control" placeholder="e.g. 101">
+          </div>
+          <div class="col-6">
+            <label class="form-label small fw-semibold">Date of Birth</label>
+            <input type="date" name="dob" class="form-control">
+          </div>
+        </div>
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label small fw-semibold">Class</label>
+            <select name="class_id" id="regClassSelect" class="form-select">
+              <option value="">Select Class</option>
+              {% for c in classes %}
+              <option value="{{ c[0] }}">{{ c[1] }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label small fw-semibold">Section</label>
+            <select name="section_id" id="regSectionSelect" class="form-select">
+              <option value="">Select Section</option>
+            </select>
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="form-label small fw-semibold">Email (optional)</label>
+          <input type="email" name="email" class="form-control" placeholder="student@example.com">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Captured Photos</label>
+          <div class="text-muted small mb-2">Capture 3–5 clear face photos from different angles.</div>
+          <div id="photo-grid" class="d-flex flex-wrap gap-1 mb-2"></div>
+          <div id="photo-count" class="small text-muted">0 / 5 photos</div>
+        </div>
+
+        <button type="button" id="submit-btn" class="btn btn-success w-100 fw-semibold">
+          <i class="bi bi-person-check me-2"></i>Register Student
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Right: Camera -->
+  <div class="col-md-7">
+    <div class="card p-4">
+      <h6 class="fw-bold mb-3"><i class="bi bi-camera me-2 text-primary"></i>Live Camera</h6>
+      <div id="camera-error" class="alert alert-danger d-none small"></div>
+      <video id="camera-feed" autoplay playsinline muted></video>
+      <div class="d-flex gap-2 mt-3">
+        <button type="button" id="capture-btn" class="btn btn-primary flex-grow-1" onclick="capturePhoto()">
+          <i class="bi bi-camera me-2"></i>Capture Photo
+        </button>
+        <button type="button" class="btn btn-outline-secondary" onclick="flipCamera()">
+          <i class="bi bi-arrow-repeat"></i>
+        </button>
+      </div>
+      <div class="text-muted small mt-2">Position face clearly in frame, then click Capture.</div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+let stream = null;
+let facingMode = 'user';
+let capturedPhotos = [];
+const MAX = 5;
+
+async function startCamera() {
+  try {
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode, width:1280, height:720 } });
+    document.getElementById('camera-feed').srcObject = stream;
+    document.getElementById('camera-error').classList.add('d-none');
+  } catch(e) {
+    const el = document.getElementById('camera-error');
+    el.classList.remove('d-none');
+    el.textContent = 'Camera error: ' + e.message;
+  }
+}
+
+function flipCamera() {
+  facingMode = facingMode === 'user' ? 'environment' : 'user';
+  startCamera();
+}
+
+function capturePhoto() {
+  if (capturedPhotos.length >= MAX) { alert('Maximum ' + MAX + ' photos allowed'); return; }
+  const video  = document.getElementById('camera-feed');
+  const canvas = document.createElement('canvas');
+  canvas.width  = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  const dataURL = canvas.toDataURL('image/jpeg', 0.85);
+  capturedPhotos.push(dataURL);
+  renderGrid();
+}
+
+function removePhoto(i) {
+  capturedPhotos.splice(i, 1);
+  renderGrid();
+}
+
+function renderGrid() {
+  const grid = document.getElementById('photo-grid');
+  grid.innerHTML = '';
+  capturedPhotos.forEach((p, i) => {
+    const w = document.createElement('div');
+    w.className = 'thumb-wrap';
+    w.innerHTML = `<img src="${p}" class="thumb"><button class="thumb-del" onclick="removePhoto(${i})">×</button>`;
+    grid.appendChild(w);
+  });
+  document.getElementById('photo-count').textContent = capturedPhotos.length + ' / ' + MAX + ' photos';
+}
+
+document.getElementById('submit-btn').addEventListener('click', () => {
+  if (!document.getElementById('student-name').value.trim()) { alert('Please enter student name'); return; }
+  if (capturedPhotos.length === 0) { alert('Please capture at least one photo'); return; }
+  document.getElementById('photos-input').value = JSON.stringify(capturedPhotos);
+  document.getElementById('reg-form').submit();
+});
+
+window.addEventListener('load', startCamera);
+
+document.getElementById('regClassSelect').addEventListener('change', function() {
+  const classId = this.value;
+  const secSel = document.getElementById('regSectionSelect');
+  secSel.innerHTML = '<option value="">Select Section</option>';
+  if (!classId) return;
+  fetch('/api/sections/' + classId)
+    .then(r => r.json())
+    .then(data => {
+      data.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = s.name;
+        secSel.appendChild(opt);
+      });
+    });
+});
+</script>
+{% endblock %}

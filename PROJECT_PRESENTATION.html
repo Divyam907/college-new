@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>PROJECT_PRESENTATION.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> or <div class="page"></div> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="-college-automated-attendance-system">🎓 College Automated Attendance System</h1>
+<h2 id="ai-powered-smart-attendance--classroom-engagement-monitoring">AI-Powered Smart Attendance &amp; Classroom Engagement Monitoring</h2>
+<hr>
+<h2 id="-project-overview">📌 Project Overview</h2>
+<p>The <strong>College Automated Attendance System</strong> is an AI-powered web application that automates student attendance using <strong>face recognition</strong> technology. It eliminates manual roll calls by identifying students from a group photograph and marking their attendance automatically. Beyond attendance, the system also provides <strong>real-time classroom engagement analysis</strong>, <strong>liveness/anti-spoofing detection</strong>, and <strong>automated report generation</strong> with email delivery.</p>
+<h3 id="who-is-it-for">Who is it for?</h3>
+<ul>
+<li><strong>College Administration (Admin)</strong> — Manage students, classes, timetables, generate reports</li>
+<li><strong>College Faculty/Staff</strong> — Mark attendance using camera, monitor classroom engagement</li>
+</ul>
+<hr>
+<h2 id="️-system-architecture">🏗️ System Architecture</h2>
+<pre class="hljs"><code><div>┌─────────────────────────────────────────────────────────────────┐
+│                        FRONTEND (Browser)                        │
+│  Bootstrap 5 + Jinja2 Templates + JavaScript (AJAX)            │
+└──────────────────────────────┬──────────────────────────────────┘
+                               │ HTTP (REST API)
+┌──────────────────────────────▼──────────────────────────────────┐
+│                     BACKEND (Flask 3.x)                          │
+│  ┌─────────┐ ┌──────────┐ ┌──────────┐ ┌────────────────────┐  │
+│  │ Auth &amp;  │ │Attendance│ │Engagement│ │  Reports &amp; Alerts  │  │
+│  │ Routing │ │  Module  │ │  Module  │ │  (Email/WhatsApp)  │  │
+│  └─────────┘ └──────────┘ └──────────┘ └────────────────────┘  │
+└──────────────────────────────┬──────────────────────────────────┘
+                               │
+         ┌─────────────────────┼─────────────────────┐
+         ▼                     ▼                     ▼
+┌─────────────────┐  ┌─────────────────┐  ┌─────────────────────┐
+│   PostgreSQL    │  │    DeepFace     │  │   OpenCV + Haar     │
+│   Database      │  │  (VGG-Face)     │  │   Cascade + MTCNN   │
+│                 │  │  Face Matching  │  │   Face Detection    │
+└─────────────────┘  └─────────────────┘  └─────────────────────┘
+</div></code></pre>
+<hr>
+<h2 id="-features">✨ Features</h2>
+<h3 id="1--automated-face-recognition-attendance">1. 📸 Automated Face Recognition Attendance</h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Group Photo Processing</td>
+<td>Upload one class photo → all students identified automatically</td>
+</tr>
+<tr>
+<td>Face Detection</td>
+<td>MTCNN (Multi-task Cascaded Convolutional Networks) detects faces</td>
+</tr>
+<tr>
+<td>Face Recognition</td>
+<td>VGG-Face model generates 4096-dimensional embeddings</td>
+</tr>
+<tr>
+<td>Matching Algorithm</td>
+<td>Euclidean distance comparison against enrolled embeddings</td>
+</tr>
+<tr>
+<td>Accuracy</td>
+<td>Threshold-based matching (distance &lt; 0.9 = match)</td>
+</tr>
+<tr>
+<td>Duplicate Prevention</td>
+<td>Same student cannot be marked twice for same period/day</td>
+</tr>
+<tr>
+<td>Multi-student</td>
+<td>Handles multiple students in a single image</td>
+</tr>
+</tbody>
+</table>
+<h3 id="2--liveness-detection-anti-spoofing">2. 🔐 Liveness Detection (Anti-Spoofing)</h3>
+<p>Prevents cheating by detecting if a <strong>real person</strong> is in front of the camera vs. a printed photo or phone screen.</p>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>How it Works</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Texture Analysis</td>
+<td>Laplacian variance — real faces have more texture detail than flat photos</td>
+</tr>
+<tr>
+<td>Moiré Pattern Detection</td>
+<td>FFT analysis — screens/prints show interference patterns</td>
+</tr>
+<tr>
+<td>Blink Detection</td>
+<td>Eye Aspect Ratio tracking — real people blink naturally</td>
+</tr>
+<tr>
+<td>Head Movement</td>
+<td>Micro-movement tracking — static photos don't move</td>
+</tr>
+<tr>
+<td>3D Depth Cues</td>
+<td>Validates natural face structure presence</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Confidence Score</strong>: <code>checks_passed / total_checks</code> (threshold: 66%)</p>
+<h3 id="3--real-time-engagement-monitoring">3. 📊 Real-Time Engagement Monitoring</h3>
+<p>Analyzes classroom engagement during lectures in real-time:</p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>How it's Measured</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gaze Direction</td>
+<td>Eye position relative to face center (center/left/right/down)</td>
+</tr>
+<tr>
+<td>Emotion</td>
+<td>DeepFace emotion recognition (7 emotions)</td>
+</tr>
+<tr>
+<td>Face Orientation</td>
+<td>Gradient symmetry analysis (frontal vs turned)</td>
+</tr>
+<tr>
+<td>Engagement Score</td>
+<td>0.0–1.0 per student based on gaze + emotion + eye visibility</td>
+</tr>
+<tr>
+<td>Classification</td>
+<td>Attentive / Confused / Distracted</td>
+</tr>
+</tbody>
+</table>
+<p><strong>How it works on College Side:</strong></p>
+<ol>
+<li>Faculty selects Class → Section → Period → Capture Interval</li>
+<li>Clicks &quot;Start&quot; → Camera opens and captures frames at set intervals</li>
+<li>Each capture shows: photo snapshot + aggregate class metrics</li>
+<li>Data stored in database for admin analysis</li>
+</ol>
+<p><strong>Admin Side:</strong> Full per-student breakdown — individual engagement score, emotion, gaze, liveness for each identified student.</p>
+<h3 id="4--automated-report-generation">4. 📧 Automated Report Generation</h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Daily Report</td>
+<td>Today's attendance per section/period</td>
+</tr>
+<tr>
+<td>Weekly Report</td>
+<td>7-day aggregated data</td>
+</tr>
+<tr>
+<td>Monthly Report</td>
+<td>Full month statistics</td>
+</tr>
+<tr>
+<td>Custom Report</td>
+<td>Filtered by class, section, date range</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Excel attachment with 2 sheets (raw data + summary)</li>
+<li>Email body includes student names grouped by section/period</li>
+<li>Sent via Gmail SMTP with App Password</li>
+</ul>
+<h3 id="5--whatsapp-alerts-optional">5. 📱 WhatsApp Alerts (Optional)</h3>
+<ul>
+<li>Absence notifications sent to parents/teachers</li>
+<li>Daily summary reports via WhatsApp</li>
+<li>Engagement alerts (low engagement detection)</li>
+<li>Multiple recipient roles: Parent, Teacher, Dean, HOD</li>
+</ul>
+<h3 id="6--continuous-camera-capture-optional">6. 🎥 Continuous Camera Capture (Optional)</h3>
+<ul>
+<li>RTSP stream support (IP cameras)</li>
+<li>Webcam support for local deployment</li>
+<li>Configurable capture intervals</li>
+<li>Background processing with multi-threading</li>
+</ul>
+<h3 id="7--timetable--class-management">7. 📅 Timetable &amp; Class Management</h3>
+<ul>
+<li>Class → Section → Period hierarchy</li>
+<li>Day-wise timetable scheduling</li>
+<li>Teacher assignment per period</li>
+<li>Dynamic period selection in attendance marking</li>
+</ul>
+<hr>
+<h2 id="️-technologies-used">🛠️ Technologies Used</h2>
+<h3 id="backend">Backend</h3>
+<table>
+<thead>
+<tr>
+<th>Technology</th>
+<th>Purpose</th>
+<th>Version</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Python</td>
+<td>Core programming language</td>
+<td>3.13</td>
+</tr>
+<tr>
+<td>Flask</td>
+<td>Web framework</td>
+<td>3.x</td>
+</tr>
+<tr>
+<td>PostgreSQL</td>
+<td>Relational database</td>
+<td>—</td>
+</tr>
+<tr>
+<td>psycopg2</td>
+<td>PostgreSQL adapter</td>
+<td>2.9.9</td>
+</tr>
+</tbody>
+</table>
+<h3 id="aiml--computer-vision">AI/ML &amp; Computer Vision</h3>
+<table>
+<thead>
+<tr>
+<th>Technology</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DeepFace</td>
+<td>Face recognition &amp; emotion analysis</td>
+</tr>
+<tr>
+<td>VGG-Face</td>
+<td>4096-dim face embedding model</td>
+</tr>
+<tr>
+<td>MTCNN</td>
+<td>Face detection (multi-task CNN)</td>
+</tr>
+<tr>
+<td>OpenCV</td>
+<td>Image processing, Haar cascades</td>
+</tr>
+<tr>
+<td>TensorFlow/Keras</td>
+<td>Deep learning framework</td>
+</tr>
+<tr>
+<td>NumPy</td>
+<td>Numerical computations</td>
+</tr>
+</tbody>
+</table>
+<h3 id="frontend">Frontend</h3>
+<table>
+<thead>
+<tr>
+<th>Technology</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bootstrap 5.3</td>
+<td>Responsive CSS framework</td>
+</tr>
+<tr>
+<td>Bootstrap Icons</td>
+<td>Icon library</td>
+</tr>
+<tr>
+<td>Jinja2</td>
+<td>HTML templating</td>
+</tr>
+<tr>
+<td>JavaScript (Vanilla)</td>
+<td>AJAX, Camera API, Dynamic UI</td>
+</tr>
+</tbody>
+</table>
+<h3 id="communication">Communication</h3>
+<table>
+<thead>
+<tr>
+<th>Technology</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SMTP (Gmail)</td>
+<td>Email report delivery</td>
+</tr>
+<tr>
+<td>Twilio API</td>
+<td>WhatsApp messaging</td>
+</tr>
+<tr>
+<td>OpenPyXL</td>
+<td>Excel report generation</td>
+</tr>
+<tr>
+<td>Pandas</td>
+<td>Data manipulation &amp; analysis</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="️-database-design">🗄️ Database Design</h2>
+<p>The system uses <strong>PostgreSQL</strong> with the following tables:</p>
+<pre class="hljs"><code><div>┌──────────────┐     ┌──────────────┐     ┌──────────────────┐
+│    class     │────▶│   section    │────▶│    timetable     │
+│ (BCA-1, etc) │     │  (A, B, C)   │     │ (period/day/time)│
+└──────────────┘     └──────┬───────┘     └──────────────────┘
+                            │
+                            ▼
+                     ┌──────────────┐
+                     │   student    │
+                     │(name,roll,dob)│
+                     └──────┬───────┘
+                            │
+              ┌─────────────┼─────────────────┐
+              ▼             ▼                  ▼
+       ┌────────────┐ ┌───────────────┐ ┌──────────────────────┐
+       │ attendance │ │engagement_log │ │engagement_student_log │
+       │(date,period)│ │(class-level)  │ │  (per-student)       │
+       └────────────┘ └───────────────┘ └──────────────────────┘
+</div></code></pre>
+<p><strong>10 Tables</strong>: users, class, section, student, subject, timetable, attendance, engagement_log, engagement_student_log, engagement_sessions, whatsapp_recipients, camera_streams</p>
+<hr>
+<h2 id="-how-face-recognition-works">🔄 How Face Recognition Works</h2>
+<h3 id="step-1-student-enrollment">Step 1: Student Enrollment</h3>
+<pre class="hljs"><code><div>Admin registers student → Captures 3-5 photos → Saved to dataset/StudentName/
+                                                           ↓
+                                              gen_embed.py runs DeepFace
+                                                           ↓
+                                              4096-dim embedding per photo
+                                                           ↓
+                                              Stored in embeddings.csv
+</div></code></pre>
+<h3 id="step-2-attendance-marking">Step 2: Attendance Marking</h3>
+<pre class="hljs"><code><div>Faculty captures class photo
+         ↓
+MTCNN detects all faces in image
+         ↓
+For each face:
+  → DeepFace generates 4096-dim embedding
+  → Euclidean distance calculated against ALL embeddings in CSV
+  → Closest match selected
+  → If distance &lt; 0.9 → MATCH (student identified)
+  → Confidence = 1 / (1 + distance)
+         ↓
+All matched students marked PRESENT in database
+</div></code></pre>
+<h3 id="confidence-scoring-example">Confidence Scoring Example:</h3>
+<table>
+<thead>
+<tr>
+<th>Distance</th>
+<th>Confidence</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.30</td>
+<td>76.9%</td>
+<td>✅ Strong match</td>
+</tr>
+<tr>
+<td>0.60</td>
+<td>62.5%</td>
+<td>✅ Good match</td>
+</tr>
+<tr>
+<td>0.85</td>
+<td>54.1%</td>
+<td>✅ Acceptable</td>
+</tr>
+<tr>
+<td>0.95</td>
+<td>51.3%</td>
+<td>❌ Rejected (above threshold)</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="-engagement-analysis-algorithm">📊 Engagement Analysis Algorithm</h2>
+<pre class="hljs"><code><div>For each detected face:
+  1. Detect eyes → Compute gaze (center/left/right/down)
+  2. DeepFace → Detect emotion (neutral/happy/sad/angry/fear/surprise/disgust)
+  3. Gradient analysis → Face orientation (frontal/turned)
+
+  Engagement Score (0 to 1):
+    Start at 1.0
+    − 0.4 if gaze ≠ center (looking away)
+    − 0.3 if no eyes visible (looking down/covered)
+    − 0.2 if emotion is distracted (angry/disgust/sad)
+    − 0.1 if emotion is confused (fear/surprise)
+
+  Classification:
+    Score ≥ 0.7 → ATTENTIVE 🟢
+    Score 0.4-0.7 → MODERATE 🟡
+    Score &lt; 0.4 → DISTRACTED 🔴
+</div></code></pre>
+<hr>
+<h2 id="-user-roles--access">👥 User Roles &amp; Access</h2>
+<h3 id="admin-portal-admin">Admin Portal (<code>/admin</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Capabilities</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dashboard</td>
+<td>View KPIs (total students, classes, today's attendance)</td>
+</tr>
+<tr>
+<td>Classes &amp; Sections</td>
+<td>Create/delete classes and sections</td>
+</tr>
+<tr>
+<td>Timetable</td>
+<td>Schedule periods per section per day</td>
+</tr>
+<tr>
+<td>Students</td>
+<td>Register with face photos, manage records</td>
+</tr>
+<tr>
+<td>Engagement Reports</td>
+<td>View per-student engagement, emotion, liveness data</td>
+</tr>
+<tr>
+<td>Cameras</td>
+<td>Manage RTSP/webcam streams for auto-capture</td>
+</tr>
+<tr>
+<td>WhatsApp</td>
+<td>Configure recipients, send alerts</td>
+</tr>
+<tr>
+<td>Reports</td>
+<td>Generate and email attendance reports</td>
+</tr>
+</tbody>
+</table>
+<h3 id="college-staff-portal-college">College Staff Portal (<code>/college</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Capabilities</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dashboard</td>
+<td>Today's attendance stats</td>
+</tr>
+<tr>
+<td>Mark Attendance</td>
+<td>Camera capture → face recognition → auto-mark</td>
+</tr>
+<tr>
+<td>Records</td>
+<td>View attendance by date/class/section</td>
+</tr>
+<tr>
+<td>Engagement</td>
+<td>Start/stop monitoring sessions, view class-level metrics</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="-project-structure">📁 Project Structure</h2>
+<pre class="hljs"><code><div>College_Automated_Attendance/
+├── app.py                    # Main Flask application (all routes)
+├── config.py                 # Configuration (DB, Email, WhatsApp, etc.)
+├── connection.py             # Database connection helper
+├── Attendance_update_db.py   # Face recognition &amp; attendance functions
+├── gen_embed.py              # Generate face embeddings from photos
+├── engagement.py             # Engagement analysis module
+├── liveness.py               # Liveness/anti-spoofing detection
+├── send_email.py             # Email sending utility
+├── send_report.py            # Report generation &amp; delivery
+├── Schedule.py               # Scheduled report automation
+├── embeddings.csv            # Stored face embeddings (4096-dim)
+├── requirements.txt          # Python dependencies
+├── dataset/                  # Student face photos
+│   ├── Student Name/
+│   │   ├── photo_1.jpg
+│   │   ├── photo_2.jpg
+│   │   └── photo_3.jpg
+├── images/                   # Captured attendance images
+├── templates/                # HTML templates
+│   ├── base.html             # Base layout (sidebar + header)
+│   ├── login.html            # Login page
+│   ├── signup.html           # Signup page
+│   ├── admin/                # Admin portal pages
+│   │   ├── dashboard.html
+│   │   ├── students.html
+│   │   ├── register_student.html
+│   │   ├── engagement.html
+│   │   └── ...
+│   └── college/              # College staff portal pages
+│       ├── dashboard.html
+│       ├── mark_attendance.html
+│       ├── records.html
+│       └── engagement.html
+└── figures/                  # Documentation images
+</div></code></pre>
+<hr>
+<h2 id="️-setup--installation">⚙️ Setup &amp; Installation</h2>
+<h3 id="prerequisites">Prerequisites</h3>
+<ul>
+<li>Python 3.10+ (tested on 3.13)</li>
+<li>PostgreSQL installed and running</li>
+<li>Webcam (for attendance capture)</li>
+<li>Gmail account with App Password (for reports)</li>
+</ul>
+<h3 id="steps">Steps</h3>
+<pre class="hljs"><code><div><span class="hljs-comment"># 1. Clone repository</span>
+git <span class="hljs-built_in">clone</span> &lt;repository-url&gt;
+<span class="hljs-built_in">cd</span> College_Automated_Attendance
+
+<span class="hljs-comment"># 2. Create virtual environment</span>
+python -m venv venv
+venv\Scripts\activate  <span class="hljs-comment"># Windows</span>
+<span class="hljs-comment"># source venv/bin/activate  # Linux/Mac</span>
+
+<span class="hljs-comment"># 3. Install dependencies</span>
+pip install -r requirements.txt
+<span class="hljs-comment"># For Python 3.13: pip install -r requirements_py313.txt</span>
+
+<span class="hljs-comment"># 4. Configure database (config.py)</span>
+<span class="hljs-comment"># Update DB_PARAMS with your PostgreSQL credentials</span>
+
+<span class="hljs-comment"># 5. Run the application</span>
+python app.py
+
+<span class="hljs-comment"># 6. Open browser</span>
+<span class="hljs-comment"># http://localhost:5000</span>
+</div></code></pre>
+<h3 id="first-time-setup">First-Time Setup</h3>
+<ol>
+<li>Create admin account via <code>/signup</code></li>
+<li>Create classes and sections (<code>/admin/classes</code>)</li>
+<li>Set up timetable (<code>/admin/timetable</code>)</li>
+<li>Register students with face photos (<code>/admin/register</code>)</li>
+<li>Generate embeddings (automatic on registration)</li>
+<li>Start marking attendance! (<code>/college/mark</code>)</li>
+</ol>
+<hr>
+<h2 id="-security-features">🔒 Security Features</h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Implementation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Password Hashing</td>
+<td>Werkzeug PBKDF2-SHA256</td>
+</tr>
+<tr>
+<td>Session Management</td>
+<td>Flask server-side sessions</td>
+</tr>
+<tr>
+<td>Role-Based Access</td>
+<td>Decorators (<code>@admin_required</code>, <code>@college_required</code>)</td>
+</tr>
+<tr>
+<td>Liveness Detection</td>
+<td>Prevents photo/video spoofing</td>
+</tr>
+<tr>
+<td>Input Validation</td>
+<td>Server-side validation on all forms</td>
+</tr>
+<tr>
+<td>CSRF Protection</td>
+<td>Flask session-based protection</td>
+</tr>
+<tr>
+<td>SQL Injection Prevention</td>
+<td>Parameterized queries (psycopg2)</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="-performance--scalability">📈 Performance &amp; Scalability</h2>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Face Detection</td>
+<td>~200ms per face (MTCNN)</td>
+</tr>
+<tr>
+<td>Face Matching</td>
+<td>~100ms per face against all embeddings</td>
+</tr>
+<tr>
+<td>Engagement Analysis</td>
+<td>~500ms per frame (includes emotion detection)</td>
+</tr>
+<tr>
+<td>Concurrent Users</td>
+<td>Supports multiple simultaneous sessions</td>
+</tr>
+<tr>
+<td>Database</td>
+<td>PostgreSQL with indexes for fast lookups</td>
+</tr>
+<tr>
+<td>Multi-threading</td>
+<td>Background camera capture and alert sending</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="-future-enhancements">🚀 Future Enhancements</h2>
+<ul>
+<li>Mobile app integration</li>
+<li>Real-time video streaming attendance</li>
+<li>Parent portal for viewing child's attendance</li>
+<li>Push notifications</li>
+<li>Advanced analytics dashboard with charts</li>
+<li>Export to college ERP systems</li>
+<li>Multi-campus support</li>
+</ul>
+<hr>
+<h2 id="-summary">📝 Summary</h2>
+<p>This project demonstrates a <strong>complete end-to-end solution</strong> for automated college attendance using modern AI technologies. It combines:</p>
+<ol>
+<li><strong>Deep Learning</strong> (VGG-Face, MTCNN) for accurate face recognition</li>
+<li><strong>Computer Vision</strong> (OpenCV) for image processing and analysis</li>
+<li><strong>NLP/Emotion AI</strong> (DeepFace) for engagement monitoring</li>
+<li><strong>Web Development</strong> (Flask + Bootstrap) for user interface</li>
+<li><strong>Database Management</strong> (PostgreSQL) for data persistence</li>
+<li><strong>Communication APIs</strong> (SMTP, Twilio) for alerts and reports</li>
+</ol>
+<p>The system is <strong>production-ready</strong> with security features, anti-spoofing detection, and automated scheduling — making it suitable for real-world deployment in educational institutions.</p>
+<hr>
+<p><em>Developed as a college project demonstrating AI/ML integration in web applications.</em></p>
+
+</body>
+</html>

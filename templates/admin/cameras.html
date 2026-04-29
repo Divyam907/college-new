@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Cameras & RTSP – AttendanceAI{% endblock %}
+{% block page_title %}Continuous Attendance (Cameras){% endblock %}
+{% block content %}
+
+<!-- Status Card -->
+<div class="card mb-4">
+  <div class="card-body p-4 d-flex align-items-center justify-content-between">
+    <div>
+      <h6 class="fw-bold mb-1"><i class="bi bi-broadcast me-2 text-primary"></i>Continuous Capture System</h6>
+      <span class="small text-muted">
+        Auto-captures every 15 min during scheduled periods. Prevents proxy attendance.
+      </span>
+    </div>
+    <div class="d-flex gap-2">
+      <form method="POST" action="{{ url_for('admin_toggle_continuous') }}">
+        {% if ca_status.running %}
+        <button type="submit" class="btn btn-warning">
+          <i class="bi bi-pause-circle me-1"></i>Stop
+        </button>
+        {% else %}
+        <button type="submit" class="btn btn-success">
+          <i class="bi bi-play-circle me-1"></i>Start
+        </button>
+        {% endif %}
+      </form>
+      <form method="POST" action="{{ url_for('admin_capture_now') }}">
+        <button type="submit" class="btn btn-outline-primary">
+          <i class="bi bi-camera me-1"></i>Capture Now
+        </button>
+      </form>
+    </div>
+  </div>
+  <div class="card-footer bg-light small px-4">
+    Status: <span class="badge {% if ca_status.running %}bg-success{% else %}bg-secondary{% endif %}">
+      {{ 'Running' if ca_status.running else 'Stopped' }}
+    </span>
+    &nbsp;| Interval: {{ ca_status.get('interval_minutes', 15) }} min
+    &nbsp;| Active Streams: {{ ca_status.streams|length }}
+  </div>
+</div>
+
+<!-- Add Camera Form -->
+<div class="card mb-4">
+  <div class="card-body p-4">
+    <h6 class="fw-bold mb-3"><i class="bi bi-plus-circle me-2 text-primary"></i>Add Camera Stream</h6>
+    <form method="POST" action="{{ url_for('admin_add_camera') }}">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label small fw-semibold">Camera Name</label>
+          <input type="text" name="name" class="form-control form-control-sm" placeholder="e.g. Room 101" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small fw-semibold">RTSP URL (leave blank for webcam)</label>
+          <input type="text" name="rtsp_url" class="form-control form-control-sm" placeholder="rtsp://admin:pass@192.168.1.100:554/stream">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small fw-semibold">Section</label>
+          <select name="section_id" class="form-select form-select-sm" required>
+            <option value="">Select Section</option>
+            {% for s in sections %}
+            <option value="{{ s[0] }}">{{ s[1] }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <button type="submit" class="btn btn-primary btn-sm w-100">Add Camera</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Camera List -->
+<div class="card">
+  <div class="card-header bg-white py-3 px-4 border-bottom">
+    <span class="fw-semibold">{{ cameras|length }} Camera(s) Registered</span>
+  </div>
+  <div class="card-body p-0">
+    {% if cameras %}
+    <table class="table table-hover mb-0 small">
+      <thead class="table-light">
+        <tr>
+          <th class="px-4">Name</th>
+          <th>URL</th>
+          <th>Class / Section</th>
+          <th>Status</th>
+          <th>Active</th>
+          <th class="text-end px-4">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in cameras %}
+        <tr>
+          <td class="px-4 fw-semibold">{{ c[2] }}</td>
+          <td class="text-muted" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+            {{ c[3] if c[3] != 'webcam' else '🖥️ Laptop Webcam' }}
+          </td>
+          <td>{{ c[6] or '—' }} – {{ c[7] or '—' }}</td>
+          <td>
+            {% set stream_status = ca_status.streams.get(c[1], {}).get('status', 'idle') %}
+            <span class="badge {% if 'ok' in stream_status %}bg-success{% elif 'error' in stream_status %}bg-danger{% else %}bg-secondary{% endif %}">
+              {{ stream_status }}
+            </span>
+          </td>
+          <td>
+            {% if c[5] %}
+            <span class="badge bg-success">Active</span>
+            {% else %}
+            <span class="badge bg-secondary">Disabled</span>
+            {% endif %}
+          </td>
+          <td class="text-end px-4">
+            <form method="POST" action="{{ url_for('admin_delete_camera', cam_id=c[0]) }}" class="d-inline"
+                  onsubmit="return confirm('Remove this camera?')">
+              <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="text-center py-5 text-muted">
+      <i class="bi bi-webcam fs-1 d-block mb-2 opacity-25"></i>
+      No cameras registered. Add a camera stream above.<br>
+      <span class="small">Leave RTSP URL blank to use your laptop webcam for testing.</span>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

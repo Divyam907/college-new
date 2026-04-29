@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Attendance Records – AttendanceAI{% endblock %}
+{% block page_title %}Attendance Records{% endblock %}
+{% block content %}
+
+<div class="card mb-4">
+  <div class="card-body p-3">
+    <form method="GET" class="d-flex align-items-center gap-2 flex-wrap">
+      <label class="form-label mb-0 small fw-semibold">Date:</label>
+      <input type="date" name="date" value="{{ date }}" class="form-control form-control-sm" style="max-width:160px">
+      <select name="class_id" id="recClassSelect" class="form-select form-select-sm" style="max-width:150px">
+        <option value="">All Classes</option>
+        {% for c in classes %}
+        <option value="{{ c[0] }}" {% if selected_class|string == c[0]|string %}selected{% endif %}>{{ c[1] }}</option>
+        {% endfor %}
+      </select>
+      <select name="section_id" id="recSectionSelect" class="form-select form-select-sm" style="max-width:150px">
+        <option value="">All Sections</option>
+      </select>
+      <button type="submit" class="btn btn-primary btn-sm">
+        <i class="bi bi-search me-1"></i>Filter
+      </button>
+      {% if dates %}
+      <div class="dropdown ms-auto">
+        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">Recent</button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          {% for d in dates %}
+          <li><a class="dropdown-item small" href="?date={{ d }}">{{ d }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header bg-white px-4 py-3 border-bottom d-flex justify-content-between align-items-center">
+    <span class="fw-semibold">Attendance for <strong>{{ date }}</strong></span>
+    <span class="badge bg-primary rounded-pill">{{ records|length }} records</span>
+  </div>
+  <div class="card-body p-0">
+    {% if records %}
+    <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th class="px-4">#</th>
+          <th>Student</th>
+          <th>Roll No</th>
+          <th>Class</th>
+          <th>Section</th>
+          <th>Period</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in records %}
+        <tr>
+          <td class="px-4 text-muted small">{{ loop.index }}</td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <div class="rounded-circle bg-success d-flex align-items-center justify-content-center text-white"
+                   style="width:30px;height:30px;font-size:12px;flex-shrink:0">
+                {{ r[0][0]|upper }}
+              </div>
+              <span class="fw-semibold small">{{ r[0] }}</span>
+            </div>
+          </td>
+          <td class="small">{{ r[1] or '—' }}</td>
+          <td class="small">{{ r[2] or '—' }}</td>
+          <td class="small">{{ r[3] or '—' }}</td>
+          <td><span class="badge bg-light text-dark border">{{ r[4] or '—' }}</span></td>
+          <td class="text-muted small">{{ r[5] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5 text-muted">
+      <i class="bi bi-calendar-x fs-1 d-block mb-2 opacity-25"></i>
+      No attendance records for <strong>{{ date }}</strong>.
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+// Load sections if class is pre-selected
+document.addEventListener('DOMContentLoaded', function() {
+  const classSel = document.getElementById('recClassSelect');
+  const secSel = document.getElementById('recSectionSelect');
+  const selectedSec = '{{ selected_section }}';
+
+  function loadSections(classId) {
+    secSel.innerHTML = '<option value="">All Sections</option>';
+    if (!classId) return;
+    fetch('/api/sections/' + classId)
+      .then(r => r.json())
+      .then(data => {
+        data.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.id;
+          opt.textContent = s.name;
+          if (s.id.toString() === selectedSec) opt.selected = true;
+          secSel.appendChild(opt);
+        });
+      });
+  }
+
+  classSel.addEventListener('change', function() { loadSections(this.value); });
+  if (classSel.value) loadSections(classSel.value);
+});
+</script>
+
+{% endblock %}

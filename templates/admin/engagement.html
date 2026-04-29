@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% block title %}Engagement Reports – AttendanceAI{% endblock %}
+{% block page_title %}Engagement Reports{% endblock %}
+{% block content %}
+
+<!-- Summary Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="stat-card" style="background:linear-gradient(135deg,#5661f6,#3a45d1)">
+      <div class="bg-icon"><i class="bi bi-bar-chart-steps"></i></div>
+      <div class="small opacity-75 mb-1">Total Captures (7 days)</div>
+      <div class="fs-4 fw-bold">{{ stats[0] or 0 }}</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card" style="background:linear-gradient(135deg,#28a745,#1e8c3a)">
+      <div class="bg-icon"><i class="bi bi-graph-up-arrow"></i></div>
+      <div class="small opacity-75 mb-1">Avg Score (7 days)</div>
+      <div class="fs-4 fw-bold">{{ "%.0f"|format((stats[1] or 0) * 100) }}%</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card" style="background:linear-gradient(135deg,#17a2b8,#0f7c8b)">
+      <div class="bg-icon"><i class="bi bi-people"></i></div>
+      <div class="small opacity-75 mb-1">Avg Attentive (7 days)</div>
+      <div class="fs-4 fw-bold">{{ "%.0f"|format(stats[2] or 0) }}%</div>
+    </div>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+  <div class="card-body p-3">
+    <form method="GET" class="row g-2 align-items-end">
+      <div class="col-md-2">
+        <label class="form-label small fw-semibold mb-1">Class</label>
+        <select name="class_id" class="form-select form-select-sm" onchange="filterSections(this.value)">
+          <option value="">All Classes</option>
+          {% for c in classes %}
+          <option value="{{ c[0] }}" {% if class_filter == c[0]|string %}selected{% endif %}>{{ c[1] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small fw-semibold mb-1">Section</label>
+        <select name="section_id" id="filter-section" class="form-select form-select-sm">
+          <option value="">All Sections</option>
+          {% for s in sections %}
+          <option value="{{ s[0] }}" data-class="{{ s[2] }}" {% if section_filter == s[0]|string %}selected{% endif %}>{{ s[1] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small fw-semibold mb-1">From Date</label>
+        <input type="date" name="date_from" value="{{ date_from }}" class="form-control form-control-sm">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small fw-semibold mb-1">To Date</label>
+        <input type="date" name="date_to" value="{{ date_to }}" class="form-control form-control-sm">
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-primary btn-sm w-100"><i class="bi bi-funnel me-1"></i>Filter</button>
+      </div>
+      <div class="col-md-2">
+        <a href="{{ url_for('admin_engagement') }}" class="btn btn-outline-secondary btn-sm w-100">Reset</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Engagement Data Table -->
+<div class="card">
+  <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center">
+    <span class="fw-semibold"><i class="bi bi-table me-2"></i>Engagement Log</span>
+    <span class="badge bg-secondary ms-auto">{{ logs|length }} records</span>
+  </div>
+  <div class="card-body p-0">
+    {% if logs %}
+    <div class="table-responsive">
+    <table class="table table-hover mb-0 small">
+      <thead class="table-light">
+        <tr>
+          <th class="px-4">Date</th>
+          <th>Class</th>
+          <th>Section</th>
+          <th>Period</th>
+          <th>Time</th>
+          <th>Faces</th>
+          <th>Attentive</th>
+          <th>Confused</th>
+          <th>Distracted</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for l in logs %}
+        <tr>
+          <td class="px-4">{{ l[0].strftime('%d %b %Y') if l[0] else '—' }}</td>
+          <td>{{ l[1] or '—' }}</td>
+          <td>{{ l[2] or '—' }}</td>
+          <td>{{ l[3] or '—' }}</td>
+          <td>{{ l[4].strftime('%H:%M:%S') if l[4] else '—' }}</td>
+          <td><span class="badge bg-secondary">{{ l[5] }}</span></td>
+          <td><span class="badge bg-success">{{ l[6]|round(1) }}%</span></td>
+          <td><span class="badge bg-warning text-dark">{{ l[7]|round(1) }}%</span></td>
+          <td><span class="badge bg-danger">{{ l[8]|round(1) }}%</span></td>
+          <td>
+            {% set score = l[9] %}
+            <span class="badge {% if score >= 0.7 %}bg-success{% elif score >= 0.4 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+              {{ (score * 100)|round(0) }}%
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5 text-muted">
+      <i class="bi bi-bar-chart fs-1 d-block mb-2 opacity-25"></i>
+      No engagement data found for the selected filters.
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Per-Student Engagement Table -->
+<div class="card mt-4">
+  <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center">
+    <span class="fw-semibold"><i class="bi bi-person-lines-fill me-2"></i>Per-Student Engagement &amp; Liveness</span>
+    <span class="badge bg-secondary ms-auto">{{ student_logs|length }} records</span>
+  </div>
+  <div class="card-body p-0">
+    {% if student_logs %}
+    <div class="table-responsive">
+    <table class="table table-hover mb-0 small">
+      <thead class="table-light">
+        <tr>
+          <th class="px-4">Time</th>
+          <th>Student</th>
+          <th>Class</th>
+          <th>Section</th>
+          <th>Period</th>
+          <th>Engagement</th>
+          <th>Emotion</th>
+          <th>Gaze</th>
+          <th>Attentive</th>
+          <th>Liveness</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sl in student_logs %}
+        <tr>
+          <td class="px-4">{{ sl[7].strftime('%d %b %H:%M:%S') if sl[7] else '—' }}</td>
+          <td class="fw-semibold">{{ sl[0] or '—' }}</td>
+          <td>{{ sl[8] or '—' }}</td>
+          <td>{{ sl[9] or '—' }}</td>
+          <td>{{ sl[10] or '—' }}</td>
+          <td>
+            {% set es = sl[1] or 0 %}
+            <span class="badge {% if es >= 0.7 %}bg-success{% elif es >= 0.4 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+              {{ (es * 100)|round(0) }}%
+            </span>
+          </td>
+          <td>{{ sl[2] or '—' }}</td>
+          <td>{{ sl[4] or '—' }}</td>
+          <td>
+            {% if sl[3] %}
+              <span class="badge bg-success"><i class="bi bi-check-circle"></i> Yes</span>
+            {% else %}
+              <span class="badge bg-danger"><i class="bi bi-x-circle"></i> No</span>
+            {% endif %}
+          </td>
+          <td>
+            {% set ls = sl[5] or 0 %}
+            {% if sl[6] %}
+              <span class="badge bg-success">Live {{ (ls * 100)|round(0) }}%</span>
+            {% else %}
+              <span class="badge bg-danger">Spoof {{ (ls * 100)|round(0) }}%</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5 text-muted">
+      <i class="bi bi-person fs-1 d-block mb-2 opacity-25"></i>
+      No per-student engagement data yet. Start an engagement session from the college panel.
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+function filterSections(classId) {
+  const sel = document.getElementById('filter-section');
+  const opts = sel.querySelectorAll('option[data-class]');
+  opts.forEach(o => {
+    o.style.display = (!classId || o.dataset.class === classId) ? '' : 'none';
+  });
+  if (classId) sel.value = '';
+}
+{% if class_filter %}filterSections('{{ class_filter }}');{% endif %}
+</script>
+{% endblock %}

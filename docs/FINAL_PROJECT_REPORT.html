@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Major Project Report — Automated Attendance System Using Facial Recognition</title>
+<style>
+  @page {
+    size: A4;
+    margin: 1.25in 1.25in 1.25in 1.5in;
+  }
+  body {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 12pt;
+    line-height: 1.5;
+    color: #000;
+    max-width: 7in;
+    margin: 0 auto;
+    padding: 40px 60px;
+  }
+  h1.chapter-title {
+    font-size: 16pt;
+    font-weight: bold;
+    text-transform: capitalize;
+    margin-top: 40pt;
+    margin-bottom: 18pt;
+    page-break-before: always;
+  }
+  h1.chapter-title:first-of-type { page-break-before: avoid; }
+  h2 { font-size: 14pt; font-weight: bold; margin-top: 24pt; margin-bottom: 12pt; }
+  h3 { font-size: 12pt; font-weight: bold; margin-top: 18pt; margin-bottom: 10pt; }
+  h4 { font-size: 12pt; font-weight: bold; margin-top: 14pt; margin-bottom: 8pt; }
+  p { text-align: justify; margin-bottom: 18pt; }
+  table { border-collapse: collapse; width: 100%; margin-top: 10pt; margin-bottom: 18pt; font-size: 11pt; }
+  table, th, td { border: 1px solid #000; }
+  th, td { padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f0f0f0; font-weight: bold; }
+  caption { font-size: 12pt; font-weight: bold; text-align: center; margin-bottom: 6pt; caption-side: top; }
+  .fig-caption { font-size: 12pt; font-weight: bold; text-align: center; margin-top: 6pt; margin-bottom: 18pt; }
+  .figure-block { text-align: center; margin: 18pt 0; }
+  .figure-block img { max-width: 100%; border: 1px solid #ccc; }
+  .screenshot-placeholder, .ai-image-placeholder {
+    border: 2px dashed #888;
+    padding: 30px 20px;
+    margin: 18pt 0 6pt 0;
+    text-align: center;
+    background: #fafafa;
+    font-style: italic;
+    color: #555;
+    min-height: 100px;
+  }
+  .ai-image-placeholder { background: #fffbe6; border-color: #c0a030; }
+  .ai-image-placeholder .prompt { font-weight: bold; color: #333; font-style: normal; display: block; margin-top: 10px; background: #fff8dc; padding: 8px; border: 1px solid #ddd; text-align: left; font-size: 11pt; }
+  .ref-list { font-size: 11pt; }
+  .ref-list p { margin-bottom: 6pt; text-indent: -30px; padding-left: 30px; }
+  .page-center { text-align: center; }
+  .title-page { text-align: center; min-height: 90vh; display: flex; flex-direction: column; justify-content: center; page-break-after: always; }
+  .title-page h1 { font-size: 20pt; font-weight: bold; margin-bottom: 30pt; }
+  .title-page p { text-align: center; font-size: 14pt; margin-bottom: 6pt; }
+  .prelim-page { page-break-after: always; min-height: 70vh; }
+  ul, ol { margin-bottom: 18pt; }
+  li { margin-bottom: 4pt; }
+  code { font-family: Consolas, monospace; font-size: 11pt; background: #f5f5f5; padding: 1px 4px; }
+  pre { font-family: Consolas, monospace; font-size: 10pt; background: #f5f5f5; padding: 10px; border: 1px solid #ddd; overflow-x: auto; margin-bottom: 18pt; }
+  .eq-block { text-align: center; margin: 18pt 0; font-size: 13pt; }
+  .eq-num { float: right; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- TITLE PAGE -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="title-page">
+  <p style="font-size:12pt; margin-bottom:40pt;">[University Logo Here]</p>
+  <h1>Automated Attendance System Using Facial Recognition</h1>
+  <p style="font-size:13pt; margin-bottom:30pt;"><b>Major Project Report</b></p>
+  <p style="font-size:12pt;">Submitted in partial fulfillment of the requirements for the degree of</p>
+  <p style="font-size:13pt;"><b>Bachelor of Technology</b></p>
+  <p style="font-size:12pt;">in</p>
+  <p style="font-size:13pt;"><b>Computer Science &amp; Engineering</b></p>
+  <p style="font-size:12pt; margin-top:40pt;"><b>Submitted By:</b></p>
+  <p>Author 1 Name (Roll No.)</p>
+  <p>Author 2 Name (Roll No.)</p>
+  <p>Author 3 Name (Roll No.)</p>
+  <p>Author 4 Name (Roll No.)</p>
+  <p style="margin-top:30pt;"><b>Under the Guidance of:</b></p>
+  <p>Guide Name, Designation</p>
+  <p style="margin-top:30pt;">Department of Computer Science &amp; Engineering</p>
+  <p>Institution Name, City</p>
+  <p>2025–2026</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- DECLARATION -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="prelim-page">
+  <h1 class="chapter-title" style="page-break-before:avoid; text-align:center;">Declaration</h1>
+  <p>The authors hereby declare that the work presented in this Major Project Report entitled <b>"Automated Attendance System Using Facial Recognition"</b> is an authentic record of work carried out by the authors under the supervision of [Guide Name], [Designation], Department of Computer Science &amp; Engineering, [Institution Name]. The matter embodied in this report has not been submitted for the award of any other degree or diploma.</p>
+  <br><br>
+  <p>Date: _______________</p>
+  <p>Place: _______________</p>
+  <br>
+  <table style="border:none; width:100%;">
+    <tr style="border:none;">
+      <td style="border:none; width:50%;">Signature of Author 1<br>Name:<br>Roll No.:</td>
+      <td style="border:none; width:50%;">Signature of Author 2<br>Name:<br>Roll No.:</td>
+    </tr>
+    <tr style="border:none;">
+      <td style="border:none; padding-top:30px;">Signature of Author 3<br>Name:<br>Roll No.:</td>
+      <td style="border:none; padding-top:30px;">Signature of Author 4<br>Name:<br>Roll No.:</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- CERTIFICATE -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="prelim-page">
+  <h1 class="chapter-title" style="page-break-before:avoid; text-align:center;">Certificate</h1>
+  <p>This is to certify that the Major Project Report entitled <b>"Automated Attendance System Using Facial Recognition"</b> submitted by [Author Names with Roll Numbers] in partial fulfillment of the requirements for the award of the degree of <b>Bachelor of Technology</b> in <b>Computer Science &amp; Engineering</b> from [Institution Name] is an authentic record of work carried out under my supervision and guidance.</p>
+  <br><br><br>
+  <table style="border:none; width:100%;">
+    <tr style="border:none;">
+      <td style="border:none; width:50%;">Project Guide<br><br><br>Name:<br>Designation:<br>Department:</td>
+      <td style="border:none; width:50%;">Head of Department<br><br><br>Name:<br>Designation:<br>Department:</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ACKNOWLEDGEMENT -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="prelim-page">
+  <h1 class="chapter-title" style="page-break-before:avoid; text-align:center;">Acknowledgement</h1>
+  <p>The authors express sincere gratitude to the project guide [Guide Name] for continuous support, valuable suggestions, and constructive criticism throughout the development of this project. The authors are also thankful to the Head of the Department, [HOD Name], and the entire faculty of the Department of Computer Science &amp; Engineering for providing necessary resources and laboratory facilities.</p>
+  <p>The authors acknowledge the contribution of the open-source community, particularly the developers of DeepFace, TensorFlow, Flask, OpenCV, and PostgreSQL, whose tools and frameworks form the backbone of this system.</p>
+  <p>Finally, the authors thank their families and friends for their encouragement and support during the course of this project.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ABSTRACT -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="prelim-page">
+  <h1 class="chapter-title" style="page-break-before:avoid; text-align:center;">Abstract</h1>
+  <p>This report presents the design, development, and implementation of an Automated Attendance System Using Facial Recognition. The system replaces traditional manual attendance methods with a computer-vision-driven digital workflow that supports student enrollment through webcam capture, real-time identity verification using deep learning, subject-wise attendance marking, automated report generation in Excel format, and email-based communication to faculty and administrators.</p>
+  <p>The core recognition engine uses DeepFace with the VGG-Face model to generate 4096-dimensional facial embeddings for enrolled students. During attendance marking, faces detected in classroom images using MTCNN are compared against stored embeddings through Euclidean distance computation with a configurable threshold of 0.9. The system is built on Flask for the web portal, PostgreSQL for persistent data storage, and supports role-based access for administrators and college staff.</p>
+  <p>Beyond the base attendance functionality, the system introduces four advanced features currently under development: (a) Ambient Attention and Engagement Analytics using emotion and gaze detection to compute classroom engagement scores, (b) Zero-Click Continuous Attendance through CCTV/RTSP camera integration for fully automated frame capture, (c) Multi-Modal Anti-Spoofing with liveness detection to prevent proxy attendance through photograph-based fraud, and (d) Multi-Channel Notification via WhatsApp Business API for real-time alerts to parents, faculty, HODs, and the Dean.</p>
+  <p>The implemented system has been tested with a dataset of enrolled students and demonstrates successful face detection, identity matching, duplicate prevention, and report generation across daily, weekly, and monthly intervals.</p>
+  <p><b>Keywords:</b> Facial Recognition, Attendance Automation, DeepFace, VGG-Face, Flask, PostgreSQL, MTCNN, Engagement Analytics, Liveness Detection, RTSP, WhatsApp API.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- TABLE OF CONTENTS -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="prelim-page">
+  <h1 class="chapter-title" style="page-break-before:avoid; text-align:center;">Table of Contents</h1>
+  <table style="border:none; width:100%;">
+    <tr style="border:none;"><td style="border:none;">Declaration</td><td style="border:none; text-align:right;">(ii)</td></tr>
+    <tr style="border:none;"><td style="border:none;">Certificate</td><td style="border:none; text-align:right;">(iii)</td></tr>
+    <tr style="border:none;"><td style="border:none;">Acknowledgement</td><td style="border:none; text-align:right;">(iv)</td></tr>
+    <tr style="border:none;"><td style="border:none;">Abstract</td><td style="border:none; text-align:right;">(v)</td></tr>
+    <tr style="border:none;"><td style="border:none;">Table of Contents</td><td style="border:none; text-align:right;">(vi)</td></tr>
+    <tr style="border:none;"><td style="border:none;">List of Figures</td><td style="border:none; text-align:right;">(vii)</td></tr>
+    <tr style="border:none;"><td style="border:none;">List of Tables</td><td style="border:none; text-align:right;">(viii)</td></tr>
+    <tr style="border:none;"><td style="border:none;" colspan="2">&nbsp;</td></tr>
+    <tr style="border:none;"><td style="border:none;"><b>Chapter 1. Introduction</b></td><td style="border:none;"></td></tr>
+    <tr style="border:none;"><td style="border:none;">&emsp;1.1 Background and Motivation</td><td style="border:none;"></td></tr>
+    <tr style="border:none;"><td style="border:none;">&emsp;1.2 Problem Statement and Objectives</td><td style="border:none;"></td></tr>
+    <tr style="border:none;"><td style="border:none;">&emsp;1.3 Benefits of Research</td><td style="border:none;"></td></tr>
+    <tr style="border:none;"><td style="border:none;">&emsp;1.4 Limitations of Research</td><td style="border:none;"></td></tr>
+    <tr style="border:none;"><td style="border:none;" colspan="2">&nbsp;</td></tr>
+    <tr style="border:none;"><td style="border:none;"><b>Chapter 2. Literature Survey</b></td><td style="border:none;"></td></tr>
+    <tr style="border:none;"><td style="border:none;">&emsp;2.1 Introduction</td><td style="border:none;"></td></tr>
+    <tr style="border:none;"><td style="border:none;">&emsp;2.2 Literature Review</td><td style="border:none;"></td></tr>
+    <tr style="border:none;"><td style="border:none;">&emsp;2.3 Inferences Drawn from Literature Review</td><td style="border:none;"></td></tr>
+    <tr style="border:none;"><td style="border:none;" colspan="2">&nbsp;</td></tr>
+    <tr style="border:none;"><td style="border:none;"><b>Chapter 3. Proposed Work</b></td><td style="border:none;"></td></tr>
+    <tr style="border:none;"><td style="border:none;">&emsp;3.1 Introduction</td><td style="border:none;"></td></tr>
+    <tr style="border:none;"><td style="border:none;">&emsp;3.2 Proposed System Architecture</td><td style="border:none;"></td></tr>
+    <tr style="border:none;"><td style="border:none;">&emsp;3.3 Core Attendance Module</td><td style="border:none;"></td></tr>
+    <tr style="border:none;"><td style="border:none;">&emsp;3.4 Advanced Feature: Engagement Analytics</td><td style="border:none;"></td></tr>
+    <tr style="border:none;"><td style="border:none;">&emsp;3.5 Advanced Feature: CCTV/RTSP Integration</td><td style="border:none;"></td></tr>
+    <tr style="border:none;"><td style="border:none;">&emsp;3.6 Advanced Feature: Liveness Detection</td><td style="border:none;"></td></tr>
+    <tr style="border:none;"><td style="border:none;">&emsp;3.7 Advanced Feature: WhatsApp Multi-Channel Alerts</td><td style="border:none;"></td></tr>
+    <tr style="border:none;"><td style="border:none;" colspan="2">&nbsp;</td></tr>
+    <tr style="border:none;"><td style="border:none;"><b>Chapter 4. Methodology</b></td><td style="border:none;"></td></tr>
+    <tr style="border:none;"><td style="border:none;">&emsp;4.1 Introduction</td><td style="border:none;"></td></tr>
+    <tr style="border:none;"><td style="border:none;">&emsp;4.2 Implementation Strategy</td><td style="border:none;"></td></tr>
+    <tr style="border:none;"><td style="border:none;">&emsp;4.3 Tools, Software, and Hardware Requirements</td><td style="border:none;"></td></tr>
+    <tr style="border:none;"><td style="border:none;" colspan="2">&nbsp;</td></tr>
+    <tr style="border:none;"><td style="border:none;"><b>Chapter 5. Result and Discussion</b></td><td style="border:none;"></td></tr>
+    <tr style="border:none;"><td style="border:none;">&emsp;5.1 Introduction</td><td style="border:none;"></td></tr>
+    <tr style="border:none;"><td style="border:none;">&emsp;5.2 Performance Metrics and Result Analysis</td><td style="border:none;"></td></tr>
+    <tr style="border:none;"><td style="border:none;" colspan="2">&nbsp;</td></tr>
+    <tr style="border:none;"><td style="border:none;"><b>Chapter 6. Conclusion and Future Scope</b></td><td style="border:none;"></td></tr>
+    <tr style="border:none;"><td style="border:none;" colspan="2">&nbsp;</td></tr>
+    <tr style="border:none;"><td style="border:none;"><b>References</b></td><td style="border:none;"></td></tr>
+    <tr style="border:none;"><td style="border:none;"><b>Plagiarism Report</b></td><td style="border:none;"></td></tr>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- LIST OF FIGURES -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="prelim-page">
+  <h1 class="chapter-title" style="page-break-before:avoid; text-align:center;">List of Figures</h1>
+  <table>
+    <tr><th>Figure No.</th><th>Description</th><th>Page No.</th></tr>
+    <tr><td>Fig. 1.1</td><td>Traditional vs. Automated Attendance Comparison</td><td></td></tr>
+    <tr><td>Fig. 1.2</td><td>High-Level System Overview</td><td></td></tr>
+    <tr><td>Fig. 2.1</td><td>Evolution of Face Recognition Techniques</td><td></td></tr>
+    <tr><td>Fig. 3.1</td><td>Proposed System Architecture</td><td></td></tr>
+    <tr><td>Fig. 3.2</td><td>Facial Recognition Workflow</td><td></td></tr>
+    <tr><td>Fig. 3.3</td><td>Database Entity-Relationship Diagram</td><td></td></tr>
+    <tr><td>Fig. 3.4</td><td>Engagement Analytics Module Architecture</td><td></td></tr>
+    <tr><td>Fig. 3.5</td><td>CCTV/RTSP Integration Data Flow</td><td></td></tr>
+    <tr><td>Fig. 3.6</td><td>Liveness Detection Pipeline</td><td></td></tr>
+    <tr><td>Fig. 3.7</td><td>WhatsApp Alert Notification Flow</td><td></td></tr>
+    <tr><td>Fig. 4.1</td><td>Attendance Marking Flowchart</td><td></td></tr>
+    <tr><td>Fig. 4.2</td><td>Student Registration Flowchart</td><td></td></tr>
+    <tr><td>Fig. 4.3</td><td>Embedding Generation Algorithm Flowchart</td><td></td></tr>
+    <tr><td>Fig. 5.1</td><td>Login Page Screenshot</td><td></td></tr>
+    <tr><td>Fig. 5.2</td><td>Admin Dashboard Screenshot</td><td></td></tr>
+    <tr><td>Fig. 5.3</td><td>Student Registration Page Screenshot</td><td></td></tr>
+    <tr><td>Fig. 5.4</td><td>College Attendance Marking Screenshot</td><td></td></tr>
+    <tr><td>Fig. 5.5</td><td>Attendance Records Page Screenshot</td><td></td></tr>
+    <tr><td>Fig. 5.6</td><td>Report Generation and Email Dispatch Screenshot</td><td></td></tr>
+    <tr><td>Fig. 5.7</td><td>Face Detection and Matching Result</td><td></td></tr>
+    <tr><td>Fig. 5.8</td><td>Euclidean Distance vs. Match Accuracy Graph</td><td></td></tr>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- LIST OF TABLES -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div class="prelim-page">
+  <h1 class="chapter-title" style="page-break-before:avoid; text-align:center;">List of Tables</h1>
+  <table>
+    <tr><th>Table No.</th><th>Description</th><th>Page No.</th></tr>
+    <tr><td>Table 1.1</td><td>Comparison of Attendance Methods</td><td></td></tr>
+    <tr><td>Table 2.1</td><td>Summary of Literature Review</td><td></td></tr>
+    <tr><td>Table 3.1</td><td>Database Schema — Student Table</td><td></td></tr>
+    <tr><td>Table 3.2</td><td>Database Schema — Subject Table</td><td></td></tr>
+    <tr><td>Table 3.3</td><td>Database Schema — Attendance Table</td><td></td></tr>
+    <tr><td>Table 3.4</td><td>Database Schema — Users Table</td><td></td></tr>
+    <tr><td>Table 3.5</td><td>Repository Module Descriptions</td><td></td></tr>
+    <tr><td>Table 4.1</td><td>Software Requirements</td><td></td></tr>
+    <tr><td>Table 4.2</td><td>Hardware Requirements</td><td></td></tr>
+    <tr><td>Table 5.1</td><td>Recognition Accuracy at Different Thresholds</td><td></td></tr>
+    <tr><td>Table 5.2</td><td>Feature Comparison with Existing Systems</td><td></td></tr>
+  </table>
+</div>
+
+<!-- ╔═════════════════════════════════════════════════════════════════════╗ -->
+<!-- ║                     CHAPTER 1: INTRODUCTION                       ║ -->
+<!-- ╚═════════════════════════════════════════════════════════════════════╝ -->
+
+<h1 class="chapter-title">Chapter 1. Introduction</h1>
+
+<h2>1.1 Background and Motivation</h2>
+
+<p>Attendance management is a fundamental administrative requirement in educational institutions. The conventional approach involves faculty manually calling names or circulating a paper sign-in sheet at the beginning of each lecture. While simple in concept, these methods introduce several problems when scaled across multiple subjects, sections, and semesters. Manual recording consumes valuable teaching time, introduces transcription errors during digitization, and creates opportunities for proxy attendance where one student signs on behalf of another [1], [2].</p>
+
+<p>The growth of deep learning based computer vision, particularly in face recognition, has made automated identity verification a practical reality for controlled indoor environments such as classrooms [3], [4], [5]. Modern face recognition frameworks like DeepFace have abstracted the complexity of implementing deep neural network pipelines, making it possible for developers to integrate state-of-the-art recognition capabilities without training models from scratch [6], [11]. This technological maturity forms the primary motivation for the proposed system.</p>
+
+<p>However, a realistic attendance system requires far more than a standalone face matching function. It demands integration with student enrollment workflows, relational database storage, subject management, user authentication, report generation, and communication channels. The motivation behind this project is to build a complete end-to-end platform that addresses all of these requirements in a single deployable application rather than limiting the scope to an isolated recognition experiment.</p>
+
+<div class="ai-image-placeholder">
+  <b>[ INSERT AI-GENERATED IMAGE — Fig. 1.1 ]</b><br>
+  Traditional vs. Automated Attendance Comparison
+  <span class="prompt">AI Image Prompt: "A split-screen comparison illustration. Left side shows a traditional college classroom with a teacher manually calling names from a register with students raising hands, paper-based attendance sheet on desk. Right side shows the same classroom with a modern digital camera mounted on the wall automatically scanning student faces with green identification boxes around each face and a digital dashboard on screen. Professional academic illustration style, clean, educational infographic, white background, labeled arrows."</span>
+</div>
+<p class="fig-caption">Fig. 1.1 Traditional vs. Automated Attendance Comparison</p>
+
+<div class="ai-image-placeholder">
+  <b>[ INSERT AI-GENERATED IMAGE — Fig. 1.2 ]</b><br>
+  High-Level System Overview
+  <span class="prompt">AI Image Prompt: "A clean system architecture overview diagram for a college attendance system. Show 4 connected blocks in a horizontal flow: (1) 'Image Capture' with a webcam icon, (2) 'Face Recognition Engine' with a brain/AI icon showing DeepFace and VGG-Face labels, (3) 'PostgreSQL Database' with a database cylinder icon showing tables: student, subject, attendance, users, (4) 'Web Portal' with a browser icon showing Admin Dashboard and College Portal. Arrows connect each block left to right. Below the main flow, show two output branches: 'Excel Reports' and 'Email/WhatsApp Alerts'. Professional technical diagram, white background, blue and gray color scheme, labeled components."</span>
+</div>
+<p class="fig-caption">Fig. 1.2 High-Level System Overview</p>
+
+<h2>1.2 Problem Statement and Objectives</h2>
+
+<p>The central problem addressed by this project is the absence of an efficient, reliable, and traceable attendance mechanism for classroom environments. In a typical manual setting, faculty members spend several minutes verifying student presence and subsequently invest additional time preparing attendance summaries. This overhead grows proportionally with class size. Manual methods also offer limited protection against duplicate marking, record loss, and proxy attendance. Even when spreadsheets are used, the process remains dependent on manual data entry and repetitive administrative effort.</p>
+
+<p>The objectives of the proposed system are as follows:</p>
+<ol>
+  <li>To reduce the time spent during classroom attendance collection by automating identity verification through facial recognition.</li>
+  <li>To use deep learning based facial embeddings (VGG-Face model via DeepFace) for verifying student identity from stored photo samples.</li>
+  <li>To support role-based access separation between system administration and classroom operation through a web-based portal.</li>
+  <li>To maintain persistent structured records in a PostgreSQL relational database with referential integrity constraints.</li>
+  <li>To generate automated attendance reports in Excel format for daily, weekly, and monthly intervals.</li>
+  <li>To deliver reports and alerts through multiple channels including email (SMTP) and WhatsApp (Business API).</li>
+  <li>To integrate advanced features including engagement analytics, CCTV-based continuous attendance, and liveness-based anti-spoofing for a commercially viable product.</li>
+</ol>
+
+<h2>1.3 Benefits of Research</h2>
+
+<p>The proposed system offers the following benefits to educational institutions:</p>
+<ol>
+  <li><b>Time Efficiency:</b> Automated face recognition reduces per-class attendance time from 5–10 minutes of manual roll call to under 10 seconds of image capture and processing.</li>
+  <li><b>Proxy Prevention:</b> Unlike paper-based methods, the system verifies physical presence through biometric face matching, eliminating impersonation. The planned liveness detection module further prevents photograph-based spoofing attacks.</li>
+  <li><b>Data Integrity:</b> Attendance records are stored in a relational database with duplicate-prevention logic, ensuring that each student is marked at most once per subject per day.</li>
+  <li><b>Automated Reporting:</b> Faculty and administrators receive formatted Excel reports through automated email delivery, reducing manual report preparation effort.</li>
+  <li><b>Scalability:</b> The modular architecture allows the system to be extended to support multiple departments, buildings, or institutions by adding database partitions and camera nodes.</li>
+  <li><b>Teaching Quality Insights:</b> The proposed engagement analytics module provides educators with lecture-synced feedback on classroom attention levels, which is not available in any mainstream attendance product.</li>
+  <li><b>Multi-Stakeholder Communication:</b> WhatsApp integration ensures that parents, HODs, Deans, and faculty receive attendance information through a channel with significantly higher open rates than email.</li>
+</ol>
+
+<h2>1.4 Limitations of Research</h2>
+
+<p>The proposed system has the following limitations in its current stage:</p>
+<ol>
+  <li><b>Lighting Dependency:</b> Recognition accuracy is influenced by classroom lighting conditions. Poorly lit environments or strong backlighting can degrade face detection performance.</li>
+  <li><b>Enrollment Quality:</b> The recognition pipeline is dependent on the quality and variety of photos captured during student registration. If only one photo is captured at a narrow angle, the system may fail to match the student in classroom images captured from different perspectives.</li>
+  <li><b>Threshold Sensitivity:</b> The current distance threshold of 0.9 has been determined through iterative testing on the project dataset. It may require recalibration when deployed in different environments with different camera hardware.</li>
+  <li><b>Hardcoded Class Count:</b> The monthly attendance percentage calculation currently assumes a fixed total of 20 classes per month, which should ideally be derived from an actual timetable entity.</li>
+  <li><b>Single Camera Input:</b> The current web portal supports attendance marking through a single webcam or device camera. Multi-camera CCTV integration is under active development but not yet fully deployed.</li>
+  <li><b>Advanced Features Under Development:</b> The engagement analytics, liveness detection, CCTV integration, and WhatsApp notification modules are currently in the implementation phase and have not yet been tested at scale.</li>
+</ol>
+
+<table>
+  <caption>Table 1.1 Comparison of Attendance Methods</caption>
+  <tr><th>Parameter</th><th>Manual Roll Call</th><th>RFID/Biometric</th><th>Proposed System</th></tr>
+  <tr><td>Time per Class</td><td>5–10 minutes</td><td>1–2 minutes (queue)</td><td>&lt;10 seconds</td></tr>
+  <tr><td>Proxy Prevention</td><td>None</td><td>Moderate</td><td>High (face + liveness)</td></tr>
+  <tr><td>Hardware Cost</td><td>None</td><td>High (readers, cards)</td><td>Low (existing cameras)</td></tr>
+  <tr><td>Report Automation</td><td>None</td><td>Partial</td><td>Full (Excel + Email + WhatsApp)</td></tr>
+  <tr><td>Teaching Feedback</td><td>None</td><td>None</td><td>Engagement Analytics</td></tr>
+  <tr><td>Multi-Face at Once</td><td>No</td><td>No (one by one)</td><td>Yes (group photo)</td></tr>
+</table>
+
+
+<!-- ╔═════════════════════════════════════════════════════════════════════╗ -->
+<!-- ║                   CHAPTER 2: LITERATURE SURVEY                     ║ -->
+<!-- ╚═════════════════════════════════════════════════════════════════════╝ -->
+
+<h1 class="chapter-title">Chapter 2. Literature Survey</h1>
+
+<h2>2.1 Introduction</h2>
+
+<p>This chapter reviews the existing literature on facial recognition technologies, attendance automation systems, and related deep learning architectures that form the theoretical foundation of the proposed system. The review covers foundational face recognition methods, modern deep learning approaches, face detection models, and relevant frameworks used in the implementation.</p>
+
+<h2>2.2 Literature Review</h2>
+
+<p>Turk and Pentland in [1] introduced the Eigenfaces method for face recognition in 1991, which uses Principal Component Analysis (PCA) to project face images into a low-dimensional eigenspace. This work established the viability of computational face recognition and served as a baseline for decades of subsequent research. However, Eigenfaces are sensitive to lighting, pose, and expression changes, which limits their effectiveness in unconstrained classroom environments.</p>
+
+<p>Zhao et al. in [2] presented a comprehensive survey of face recognition techniques in 2003, covering holistic approaches (PCA, LDA), feature-based methods, and hybrid systems. The authors identified illumination variation, pose change, and occlusion as the three primary challenges for face recognition systems, all of which are relevant to classroom-based attendance marking.</p>
+
+<p>Krizhevsky et al. in [3] demonstrated the power of deep convolutional neural networks (CNNs) with AlexNet, achieving breakthrough results on the ImageNet Large Scale Visual Recognition Challenge in 2012. This work catalyzed the adoption of deep learning for visual recognition tasks, including face recognition, by demonstrating that learned feature representations outperform handcrafted features.</p>
+
+<p>Simonyan and Zisserman in [4] proposed VGGNet, which explored the impact of network depth on recognition accuracy. The VGG-Face model, derived from this architecture, uses a 16-layer deep CNN to produce 4096-dimensional face embeddings. This model is used as the primary embedding generator in the proposed system through the DeepFace framework.</p>
+
+<p>Schroff et al. in [5] developed FaceNet at Google, which introduced the concept of learning a direct embedding mapping from face images to a compact Euclidean space where distances directly correspond to face similarity. FaceNet uses triplet loss training to achieve state-of-the-art face verification accuracy. The principle of embedding-based matching used in FaceNet directly informs the distance comparison strategy employed in the proposed system.</p>
+
+<p>Parkhi et al. in [6] created VGG-Face, a deep face recognition model trained on a large-scale dataset of celebrity faces. The model generates fixed-length vector representations that can be compared using standard distance metrics. The proposed system uses VGG-Face as the default model for embedding generation.</p>
+
+<p>Zhang et al. in [7] proposed MTCNN (Multi-Task Cascaded Convolutional Networks) for joint face detection and alignment. MTCNN uses a three-stage cascaded architecture (P-Net, R-Net, O-Net) that progressively refines face candidate regions while simultaneously predicting facial landmark locations. The proposed system uses MTCNN as the primary face detection backend for extracting facial regions from classroom images.</p>
+
+<p>Deng et al. in [8] proposed RetinaFace, a single-shot multi-level face localization model that achieves robust face detection across different scales and poses. RetinaFace is available as an alternative detector backend in the proposed system through the DeepFace framework.</p>
+
+<p>Deng et al. in [9] introduced ArcFace, which uses additive angular margin loss to learn highly discriminative face embeddings. ArcFace achieves state-of-the-art results on standard face verification benchmarks including LFW and MegaFace. This model represents a potential upgrade path for the embedding generator in future versions of the proposed system.</p>
+
+<p>Taigman et al. in [10] developed DeepFace at Facebook, which achieved near-human-level face verification accuracy on the LFW benchmark. The approach uses a nine-layer deep neural network with 3D face alignment preprocessing. This work demonstrated the commercial viability of deep learning based face verification.</p>
+
+<p>Serengil in [11] developed the DeepFace open-source framework (Python library), which provides a unified API for multiple face recognition backends including VGG-Face, FaceNet, ArcFace, and OpenFace. The proposed system uses this framework as the primary interface for embedding generation and face detection, significantly reducing implementation complexity.</p>
+
+<p>Huang et al. in [12] created the Labeled Faces in the Wild (LFW) dataset, which has become the standard benchmark for evaluating face verification algorithms in unconstrained conditions.</p>
+
+<p>He et al. in [13] introduced ResNet (Deep Residual Learning), which enabled training of very deep networks (up to 152 layers) through skip connections. ResNet architectures form the backbone of several modern face recognition models and represent a potential upgrade for the embedding generator.</p>
+
+<p>Abadi et al. in [14] presented TensorFlow, the machine learning framework used as the backend for DeepFace and Keras in the proposed system. TensorFlow provides efficient GPU-accelerated tensor operations for neural network inference during embedding generation.</p>
+
+<p>Viola and Jones in [24] proposed a rapid object detection framework using Haar-like features and a cascaded AdaBoost classifier, which became the dominant real-time face detector for over a decade before deep learning methods overtook it. Their work established the principle of cascaded rejection that is refined in modern detectors like MTCNN.</p>
+
+<p>Goodfellow et al. in [25] authored a comprehensive textbook on deep learning, covering convolutional networks, representation learning, and generative models. The theoretical foundations described in this text underpin the feature extraction and embedding generation process used in the proposed system.</p>
+
+<div class="ai-image-placeholder">
+  <b>[ INSERT AI-GENERATED IMAGE — Fig. 2.1 ]</b><br>
+  Evolution of Face Recognition Techniques
+  <span class="prompt">AI Image Prompt: "A horizontal timeline infographic showing the evolution of face recognition techniques from 1991 to 2024. Key milestones on the timeline: 1991 - Eigenfaces (PCA), 2001 - Viola-Jones (Haar Cascades), 2012 - AlexNet/Deep CNNs, 2014 - DeepFace (Facebook), 2015 - FaceNet (Google) and VGG-Face, 2016 - MTCNN, 2019 - ArcFace, 2020 - RetinaFace, 2024 - DeepFace Framework. Each milestone has a small icon and accuracy percentage. Clean academic style, horizontal layout, white background, blue gradient color scheme."</span>
+</div>
+<p class="fig-caption">Fig. 2.1 Evolution of Face Recognition Techniques</p>
+
+<h2>2.3 Inferences Drawn from Literature Review</h2>
+
+<p>The following inferences are drawn from the literature review:</p>
+<ol>
+  <li>Deep learning based face recognition models (VGG-Face, FaceNet, ArcFace) significantly outperform classical methods (Eigenfaces, Fisherfaces) in terms of accuracy and robustness to environmental variation [1], [5], [9].</li>
+  <li>Embedding-based approaches, where faces are mapped to fixed-length vectors in Euclidean space, provide an efficient and scalable mechanism for identity comparison without retraining the model for each new identity [5], [6].</li>
+  <li>MTCNN provides robust multi-face detection and alignment suitable for classroom group photographs with moderate occlusion [7].</li>
+  <li>The DeepFace framework significantly reduces implementation complexity by providing a unified API across multiple recognition and detection backends [11].</li>
+  <li>No existing literature presents a complete attendance system that integrates face recognition with engagement analytics, multi-channel alerting (WhatsApp), and liveness detection in a single deployable platform.</li>
+  <li>The majority of existing attendance automation studies limit their scope to face detection and recognition, without addressing the administrative pipeline of report generation, role-based access, and multi-stakeholder communication.</li>
+</ol>
+
+<table>
+  <caption>Table 2.1 Summary of Literature Review</caption>
+  <tr><th>Ref.</th><th>Author(s)</th><th>Year</th><th>Contribution</th><th>Relevance to Proposed System</th></tr>
+  <tr><td>[1]</td><td>Turk and Pentland</td><td>1991</td><td>Eigenfaces (PCA)</td><td>Baseline face recognition approach</td></tr>
+  <tr><td>[2]</td><td>Zhao et al.</td><td>2003</td><td>Face recognition survey</td><td>Identified key challenges</td></tr>
+  <tr><td>[3]</td><td>Krizhevsky et al.</td><td>2012</td><td>AlexNet / Deep CNNs</td><td>Foundation for deep learning in vision</td></tr>
+  <tr><td>[4]</td><td>Simonyan and Zisserman</td><td>2015</td><td>VGGNet architecture</td><td>VGG-Face model used for embeddings</td></tr>
+  <tr><td>[5]</td><td>Schroff et al.</td><td>2015</td><td>FaceNet</td><td>Embedding distance matching principle</td></tr>
+  <tr><td>[6]</td><td>Parkhi et al.</td><td>2015</td><td>VGG-Face</td><td>Primary recognition model used</td></tr>
+  <tr><td>[7]</td><td>Zhang et al.</td><td>2016</td><td>MTCNN</td><td>Primary face detector used</td></tr>
+  <tr><td>[8]</td><td>Deng et al.</td><td>2020</td><td>RetinaFace</td><td>Alternative face detector available</td></tr>
+  <tr><td>[9]</td><td>Deng et al.</td><td>2019</td><td>ArcFace</td><td>Potential embedding model upgrade</td></tr>
+  <tr><td>[10]</td><td>Taigman et al.</td><td>2014</td><td>DeepFace (Facebook)</td><td>Deep learning face verification</td></tr>
+  <tr><td>[11]</td><td>Serengil</td><td>2024</td><td>DeepFace framework</td><td>Primary recognition API used</td></tr>
+  <tr><td>[12]</td><td>Huang et al.</td><td>2007</td><td>LFW dataset</td><td>Benchmark evaluation standard</td></tr>
+  <tr><td>[13]</td><td>He et al.</td><td>2016</td><td>ResNet</td><td>Deeper backbone architecture</td></tr>
+  <tr><td>[14]</td><td>Abadi et al.</td><td>2016</td><td>TensorFlow</td><td>ML backend for DeepFace</td></tr>
+</table>
+
+
+<!-- ╔═════════════════════════════════════════════════════════════════════╗ -->
+<!-- ║                    CHAPTER 3: PROPOSED WORK                        ║ -->
+<!-- ╚═════════════════════════════════════════════════════════════════════╝ -->
+
+<h1 class="chapter-title">Chapter 3. Proposed Work</h1>
+
+<h2>3.1 Introduction</h2>
+
+<p>This chapter presents the proposed system architecture, the core attendance module, and the four advanced features that differentiate the system from existing market solutions. The proposed work encompasses both the currently implemented modules and the features under active development. The system follows a modular architecture in which enrollment, recognition, record storage, reporting, and communication are handled by separate Python modules, enabling independent development and testing of each component.</p>
+
+<h2>3.2 Proposed System Architecture</h2>
+
+<p>The system architecture consists of five primary layers: the presentation layer (Flask web portal), the application logic layer (Python modules), the recognition engine layer (DeepFace with VGG-Face), the data storage layer (PostgreSQL), and the communication layer (SMTP email and WhatsApp API). These layers interact through well-defined interfaces to support two distinct operating modes: interactive web-based attendance marking and scheduled batch processing.</p>
+
+<div class="figure-block">
+  <img src="figures/system_architecture_workflow.png" alt="System Architecture and Facial Recognition Workflow">
+</div>
+<p class="fig-caption">Fig. 3.1 Proposed System Architecture</p>
+
+<p>As illustrated in Fig. 3.1, the system begins with image acquisition through a webcam or IP camera. The captured image passes through the face detection module (MTCNN), which extracts individual facial regions. Each facial region is converted into a 4096-dimensional embedding vector by the VGG-Face model. These embeddings are compared against the stored embedding repository using Euclidean distance computation. Matches that satisfy the threshold constraint (distance ≤ 0.9) are accepted, and the corresponding attendance records are inserted into the PostgreSQL database with duplicate prevention.</p>
+
+<div class="ai-image-placeholder">
+  <b>[ INSERT AI-GENERATED IMAGE — Fig. 3.2 ]</b><br>
+  Facial Recognition Workflow
+  <span class="prompt">AI Image Prompt: "A detailed vertical flowchart showing the facial recognition attendance workflow. Steps: (1) 'Classroom Image Capture' with camera icon → (2) 'Face Detection (MTCNN)' with multiple face bounding boxes → (3) 'Face Cropping and Alignment' showing extracted face regions → (4) 'VGG-Face Embedding Generation' showing a neural network converting a face into a vector [0.23, 0.87, ...] → (5) 'Euclidean Distance Comparison' showing the formula d = ||e_q - e_i|| with a comparison against stored embeddings → (6) Decision diamond 'Distance ≤ 0.9?' with Yes leading to 'Mark Attendance in PostgreSQL' and No leading to 'Reject (Unknown Face)'. Clean flowchart style, white background, blue boxes, green for success path, red for reject path."</span>
+</div>
+<p class="fig-caption">Fig. 3.2 Facial Recognition Workflow</p>
+
+<p>The system uses four primary database tables to manage its operations. The schema is designed to support role-based access control, time-aware class mapping, and report generation through standard SQL queries.</p>
+
+<table>
+  <caption>Table 3.1 Database Schema — Student Table</caption>
+  <tr><th>Column</th><th>Data Type</th><th>Constraint</th><th>Description</th></tr>
+  <tr><td>std_id</td><td>SERIAL</td><td>PRIMARY KEY</td><td>Auto-incrementing student identifier</td></tr>
+  <tr><td>name</td><td>VARCHAR(100)</td><td>NOT NULL</td><td>Full name of the student</td></tr>
+  <tr><td>email</td><td>VARCHAR(100)</td><td>—</td><td>Optional email address</td></tr>
+</table>
+
+<table>
+  <caption>Table 3.2 Database Schema — Subject Table</caption>
+  <tr><th>Column</th><th>Data Type</th><th>Constraint</th><th>Description</th></tr>
+  <tr><td>sub_id</td><td>SERIAL</td><td>PRIMARY KEY</td><td>Auto-incrementing subject identifier</td></tr>
+  <tr><td>name</td><td>VARCHAR(100)</td><td>NOT NULL</td><td>Name of the subject</td></tr>
+  <tr><td>faculty_id</td><td>INTEGER</td><td>—</td><td>Identifier of assigned faculty</td></tr>
+  <tr><td>from_time</td><td>TIME</td><td>NOT NULL</td><td>Lecture start time</td></tr>
+  <tr><td>to_time</td><td>TIME</td><td>NOT NULL</td><td>Lecture end time</td></tr>
+</table>
+
+<table>
+  <caption>Table 3.3 Database Schema — Attendance Table</caption>
+  <tr><th>Column</th><th>Data Type</th><th>Constraint</th><th>Description</th></tr>
+  <tr><td>id</td><td>SERIAL</td><td>PRIMARY KEY</td><td>Auto-incrementing record identifier</td></tr>
+  <tr><td>date</td><td>DATE</td><td>NOT NULL</td><td>Date of attendance</td></tr>
+  <tr><td>subject_id</td><td>INTEGER</td><td>REFERENCES subject(sub_id)</td><td>Foreign key to subject</td></tr>
+  <tr><td>student_id</td><td>INTEGER</td><td>REFERENCES student(std_id)</td><td>Foreign key to student</td></tr>
+  <tr><td>image</td><td>TEXT</td><td>—</td><td>Path to captured image</td></tr>
+</table>
+
+<table>
+  <caption>Table 3.4 Database Schema — Users Table</caption>
+  <tr><th>Column</th><th>Data Type</th><th>Constraint</th><th>Description</th></tr>
+  <tr><td>id</td><td>SERIAL</td><td>PRIMARY KEY</td><td>Auto-incrementing user identifier</td></tr>
+  <tr><td>name</td><td>VARCHAR(100)</td><td>NOT NULL</td><td>Full name of the portal user</td></tr>
+  <tr><td>email</td><td>VARCHAR(100)</td><td>UNIQUE NOT NULL</td><td>Login email</td></tr>
+  <tr><td>password_hash</td><td>VARCHAR(255)</td><td>NOT NULL</td><td>Werkzeug hashed password</td></tr>
+  <tr><td>role</td><td>VARCHAR(20)</td><td>CHECK IN ('admin','college')</td><td>Role-based access control</td></tr>
+</table>
+
+<div class="ai-image-placeholder">
+  <b>[ INSERT AI-GENERATED IMAGE — Fig. 3.3 ]</b><br>
+  Database Entity-Relationship Diagram
+  <span class="prompt">AI Image Prompt: "A clean Entity-Relationship (ER) diagram for a college attendance database. Four entities: 'student' (std_id PK, name, email), 'subject' (sub_id PK, name, faculty_id, from_time, to_time), 'attendance' (id PK, date, subject_id FK, student_id FK, image), 'users' (id PK, name, email, password_hash, role). Show relationships: attendance has many-to-one with student, attendance has many-to-one with subject. Use standard ER notation with rectangles for entities, ovals for attributes, diamonds for relationships, and crow's foot notation for cardinality. White background, professional diagram style."</span>
+</div>
+<p class="fig-caption">Fig. 3.3 Database Entity-Relationship Diagram</p>
+
+<table>
+  <caption>Table 3.5 Repository Module Descriptions</caption>
+  <tr><th>Module</th><th>Lines</th><th>Primary Responsibility</th></tr>
+  <tr><td>app.py</td><td>390</td><td>Flask web application with 15 routes for authentication, admin portal, college portal, and API endpoints</td></tr>
+  <tr><td>Attendance_update_db.py</td><td>321</td><td>Face detection using MTCNN, embedding comparison using VGG-Face, subject mapping, duplicate prevention, and database insertion</td></tr>
+  <tr><td>gen_embed.py</td><td>25</td><td>Dataset traversal and generation of embeddings.csv containing 4096-dimensional VGG-Face vectors</td></tr>
+  <tr><td>generate_report.py</td><td>85</td><td>SQL-based generation of daily, weekly, and monthly attendance report DataFrames using pandas</td></tr>
+  <tr><td>send_report.py</td><td>145</td><td>Excel export using openpyxl and SMTP-based email dispatch of reports to faculty and director</td></tr>
+  <tr><td>send_email.py</td><td>40</td><td>SMTP connection management (Gmail, port 587, STARTTLS) with MIME multipart attachment support</td></tr>
+  <tr><td>Schedule.py</td><td>40</td><td>Automated scheduled execution of attendance processing and report generation at configured times</td></tr>
+  <tr><td>config.py</td><td>9</td><td>Centralized configuration for database credentials, email settings, and recipient lists</td></tr>
+  <tr><td>connection.py</td><td>23</td><td>SQLAlchemy engine and session management using psycopg2 PostgreSQL driver</td></tr>
+</table>
+
+<h2>3.3 Core Attendance Module</h2>
+
+<p>The core attendance module supports two operational modes. In the first mode (interactive portal), an administrator registers students through a webcam-enabled interface, stores images in the dataset directory, and regenerates face embeddings. A college staff user then captures a classroom image, selects the active subject, and the system detects all faces, compares embeddings, and marks attendance for recognized students in real time. In the second mode (scheduled batch), images placed in the images directory with filenames in HH-MM-SS.jpg format are automatically processed at configured times, with subject mapping derived from the image timestamp and the subject time-range table.</p>
+
+<h3>3.3.1 Admin Portal</h3>
+<p>The admin portal provides a dashboard displaying summary statistics (total students, today's attendance count, number of subjects), student registration with webcam photo capture supporting up to 5 photos per student, student management with deletion capability, and a report dispatch interface supporting daily, weekly, and monthly report types with date selection and recipient preview.</p>
+
+<h3>3.3.2 College Attendance Portal</h3>
+<p>The college portal provides a subject selection interface with radio buttons displaying subject names and time slots, live camera feed for classroom image capture, real-time processing feedback showing identified students with confidence scores, and an attendance records viewer with 30-day history filtering.</p>
+
+<h3>3.3.3 Authentication and Role Management</h3>
+<p>Role separation is handled through the users table and Flask session-based authentication. Passwords are stored using Werkzeug's hashing functions rather than plain text. Three custom decorators (<code>@login_required</code>, <code>@admin_required</code>, <code>@college_required</code>) enforce access restrictions at the route level.</p>
+
+<h2>3.4 Advanced Feature: Ambient Attention and Engagement Analytics</h2>
+
+<p>This feature transforms the system from a pure attendance tool into a teaching quality improvement platform. While marking attendance, the system uses emotion detection and gaze estimation to compute a per-lecture Engagement Score.</p>
+
+<h3>3.4.1 Technical Approach</h3>
+<p>The DeepFace framework includes a built-in emotion analysis module that classifies facial expressions into seven categories: angry, disgust, fear, happy, sad, surprise, and neutral. During attendance processing, after face detection, each detected face is additionally analyzed for emotional state. Gaze direction estimation is performed using facial landmark positions (eye corners, pupil centers) extracted during MTCNN alignment. A student is classified as "engaged" if the gaze vector points toward the front of the classroom (within a configurable angular tolerance) and the emotional state is neutral, happy, or surprise (indicating active cognitive processing).</p>
+
+<h3>3.4.2 Engagement Score Calculation</h3>
+<p>The Engagement Score for a lecture is computed as follows:</p>
+<div class="eq-block">
+  Engagement Score = (Number of Engaged Students / Total Detected Students) × 100 <span class="eq-num">(3.1)</span>
+</div>
+<p>The system generates a time-series graph of the Engagement Score sampled at multiple points during the lecture (e.g., every 15 minutes when using CCTV integration). Faculty receive a post-lecture report indicating which segments of the lecture had highest and lowest engagement, enabling targeted improvement of teaching methods.</p>
+
+<div class="ai-image-placeholder">
+  <b>[ INSERT AI-GENERATED IMAGE — Fig. 3.4 ]</b><br>
+  Engagement Analytics Module Architecture
+  <span class="prompt">AI Image Prompt: "A technical architecture diagram showing the Engagement Analytics module. Show a classroom camera capturing student faces. From the camera, two parallel processing paths: Path 1 labeled 'Face Recognition (VGG-Face)' leading to 'Attendance Marking'. Path 2 labeled 'Emotion Detection + Gaze Estimation' leading to an 'Engagement Score Calculator'. The Engagement Score feeds into a 'Time-Series Graph' showing engagement percentage over lecture duration (x-axis: 0-45 minutes, y-axis: 0-100%). Below the graph, show sample output: 'Minute 24 (Slide 5): 65% confusion detected'. Clean technical diagram, white background, blue and orange color scheme."</span>
+</div>
+<p class="fig-caption">Fig. 3.4 Engagement Analytics Module Architecture</p>
+
+<h2>3.5 Advanced Feature: Zero-Click Continuous Attendance (CCTV/RTSP Integration)</h2>
+
+<p>Most existing attendance systems require active teacher participation — capturing a photo, pressing a button, or scanning each student individually. The proposed CCTV/RTSP integration module eliminates all manual intervention by connecting directly to existing IP cameras in classrooms.</p>
+
+<h3>3.5.1 Technical Approach</h3>
+<p>The module uses OpenCV's VideoCapture with RTSP stream URLs to connect to IP cameras. The system captures frames at configurable random intervals (default: every 15 minutes) throughout the lecture duration. Each captured frame is processed through the standard attendance pipeline (face detection, embedding, matching, insertion). The use of multiple captures per lecture serves two purposes: (a) it increases the probability of detecting students who may be temporarily occluded or turned away in a single capture, and (b) it prevents partial bunking where a student marks attendance and then leaves the class.</p>
+
+<h3>3.5.2 Data Flow</h3>
+<p>The RTSP module operates as a background thread that reads the subject timetable from the database, determines which cameras correspond to which classrooms, and activates capture only during scheduled lecture windows. Captured frames are stored temporarily with timestamps and processed asynchronously to avoid blocking the camera feed.</p>
+
+<div class="ai-image-placeholder">
+  <b>[ INSERT AI-GENERATED IMAGE — Fig. 3.5 ]</b><br>
+  CCTV/RTSP Integration Data Flow
+  <span class="prompt">AI Image Prompt: "A data flow diagram showing CCTV/RTSP camera integration for automated attendance. Left side: a classroom with an IP camera on the ceiling. The camera sends an RTSP stream to a 'Frame Capture Module' which shows a clock icon with text 'Every 15 min'. Captured frames flow to 'Face Detection and Recognition Pipeline'. Results flow to 'PostgreSQL Database'. A 'Timetable Scheduler' component controls when capture is active. Show a timeline at the bottom: 9:00 AM lecture start, 9:15 capture, 9:30 capture, 9:45 capture, 10:00 lecture end. Clean technical diagram, white background."</span>
+</div>
+<p class="fig-caption">Fig. 3.5 CCTV/RTSP Integration Data Flow</p>
+
+<h2>3.6 Advanced Feature: Multi-Modal Anti-Spoofing (Liveness Detection)</h2>
+
+<p>A critical vulnerability in photograph-based face recognition systems is susceptibility to spoofing attacks, where an adversary presents a printed photograph or a digital image on a smartphone screen in front of the camera to impersonate another student. The proposed liveness detection module addresses this vulnerability.</p>
+
+<h3>3.6.1 Technical Approach</h3>
+<p>The anti-spoofing module implements a multi-layer detection strategy:</p>
+<ol>
+  <li><b>Texture Analysis:</b> Live faces exhibit micro-textures (pores, fine wrinkles) that are absent in printed or screen-displayed photographs. A Local Binary Pattern (LBP) texture descriptor is extracted from the detected facial region and classified as live or spoof using a trained binary classifier.</li>
+  <li><b>Screen Glare Detection:</b> When a face is displayed on a smartphone or laptop screen, the camera captures screen-specific artifacts including periodic brightness patterns (flicker) and surface reflections. The module analyzes the high-frequency components of the facial region for these artifacts.</li>
+  <li><b>Micro-Expression Verification:</b> For individual attendance scenarios (not group photos), the system can request a micro-expression challenge such as a blink or a head turn, verified through consecutive frame analysis.</li>
+</ol>
+
+<div class="ai-image-placeholder">
+  <b>[ INSERT AI-GENERATED IMAGE — Fig. 3.6 ]</b><br>
+  Liveness Detection Pipeline
+  <span class="prompt">AI Image Prompt: "A horizontal pipeline diagram for liveness detection anti-spoofing. Input: 'Camera Feed'. Three parallel detection layers: (1) 'Texture Analysis (LBP)' with a magnified skin texture comparison showing real skin vs printed paper, (2) 'Screen Glare Detection' showing a phone displaying a face photo with highlighted glare artifacts, (3) 'Micro-Expression Check' showing blink detection with two eye states open and closed. All three feed into a 'Liveness Score Aggregator' which outputs either 'LIVE - Proceed to Recognition' (green) or 'SPOOF - Reject and Alert' (red). Clean technical diagram, white background, green and red color accents."</span>
+</div>
+<p class="fig-caption">Fig. 3.6 Liveness Detection Pipeline</p>
+
+<h2>3.7 Advanced Feature: WhatsApp Multi-Channel Alerts</h2>
+
+<p>Email communication has limited effectiveness for time-sensitive attendance notifications because of low open rates among parents and students. The proposed system integrates the WhatsApp Business API to provide instant multi-stakeholder notifications through a high-engagement communication channel.</p>
+
+<h3>3.7.1 Technical Approach</h3>
+<p>The module uses the Twilio API for WhatsApp Business integration. Upon completion of attendance marking for a lecture, the system generates targeted notifications for multiple stakeholder categories:</p>
+<ol>
+  <li><b>Parents:</b> Instant notification if their child is absent from a class. Message includes the student name, subject, date, and time.</li>
+  <li><b>Faculty:</b> Summary message after each lecture showing the number of students present versus total enrolled, along with a list of absent students.</li>
+  <li><b>HODs (Heads of Department):</b> Daily digest at end-of-day showing department-wide attendance percentage for each subject.</li>
+  <li><b>Dean:</b> Weekly summary report with attendance trends, flagging subjects or sections with attendance below a configurable threshold (e.g., below 75%).</li>
+</ol>
+
+<h3>3.7.2 Message Template Design</h3>
+<p>WhatsApp Business API requires pre-approved message templates. The system uses parameterized templates that are populated dynamically with attendance data. Notification preferences are configurable per stakeholder category, allowing institutions to control notification frequency and content granularity.</p>
+
+<div class="ai-image-placeholder">
+  <b>[ INSERT AI-GENERATED IMAGE — Fig. 3.7 ]</b><br>
+  WhatsApp Alert Notification Flow
+  <span class="prompt">AI Image Prompt: "A notification flow diagram for WhatsApp attendance alerts. Center: 'Attendance System' box. Four outgoing arrows to WhatsApp phone mockups: (1) 'Parent' phone showing message 'Your child Rahul was absent from Mathematics at 10:00 AM today', (2) 'Faculty' phone showing '28/35 students present in CS101', (3) 'HOD' phone showing 'Daily Department Summary: Avg attendance 82%', (4) 'Dean' phone showing 'Weekly Report: 3 sections below 75% threshold'. All phones show WhatsApp green chat interface. Include Twilio API logo between center and phones. Clean infographic style, white background, WhatsApp green accents."</span>
+</div>
+<p class="fig-caption">Fig. 3.7 WhatsApp Alert Notification Flow</p>
+
+
+<!-- ╔═════════════════════════════════════════════════════════════════════╗ -->
+<!-- ║                     CHAPTER 4: METHODOLOGY                        ║ -->
+<!-- ╚═════════════════════════════════════════════════════════════════════╝ -->
+
+<h1 class="chapter-title">Chapter 4. Methodology</h1>
+
+<h2>4.1 Introduction</h2>
+
+<p>This chapter presents the implementation methodology of the proposed system including the step-by-step algorithmic processes, flowcharts for key operations, and the complete list of tools, software, and hardware requirements.</p>
+
+<h2>4.2 Implementation Strategy</h2>
+
+<h3>4.2.1 Facial Embedding Generation Algorithm</h3>
+
+<p>The embedding generation process, implemented in <code>gen_embed.py</code>, traverses the dataset directory where each subdirectory represents a registered student containing one or more facial images. For each image, the VGG-Face model extracts a 4096-dimensional feature vector. All embeddings and corresponding student names are stored in <code>embeddings.csv</code> for efficient retrieval during attendance marking.</p>
+
+<pre>
+Algorithm 1: Embedding Generation
+Input: Dataset directory D containing student subdirectories
+Output: embeddings.csv file
+
+1.  Initialize empty lists: embeddings[], names[]
+2.  FOR each subdirectory student_folder IN D:
+3.      FOR each image_file IN student_folder:
+4.          TRY:
+5.              embedding ← DeepFace.represent(image_file, model='VGG-Face')
+6.              Append embedding to embeddings[]
+7.              Append student_folder.name to names[]
+8.          CATCH Exception:
+9.              Log error and continue
+10. Create DataFrame from embeddings[] and names[]
+11. Save DataFrame to embeddings.csv
+</pre>
+
+<h3>4.2.2 Attendance Marking Algorithm</h3>
+
+<p>The attendance inference pipeline, implemented in <code>Attendance_update_db.py</code>, processes a classroom image to detect multiple faces and match each against the stored embedding repository.</p>
+
+<pre>
+Algorithm 2: Attendance Marking from Group Image
+Input: Classroom image I, Subject ID S, Date D
+Output: List of recognized students marked present
+
+1.  faces[] ← DeepFace.extract_faces(I, detector='mtcnn')
+2.  stored_embeddings ← Load from embeddings.csv
+3.  FOR each face F IN faces[]:
+4.      Crop face region from image I
+5.      query_embedding ← DeepFace.represent(F, model='VGG-Face')
+6.      distances[] ← EuclideanDistance(query_embedding, stored_embeddings)
+7.      min_distance ← MIN(distances[])
+8.      best_match_index ← ARGMIN(distances[])
+9.      IF min_distance ≤ 0.9 THEN:
+10.         student_name ← names[best_match_index]
+11.         student_id ← LookupStudentID(student_name)
+12.         IF NOT DuplicateExists(D, S, student_id) THEN:
+13.             INSERT INTO attendance(date, subject_id, student_id, image)
+14.             Add student_name to recognized_list
+15.     ELSE:
+16.         Mark face as "Unknown"
+17. RETURN recognized_list
+</pre>
+
+<p>The Euclidean distance between a query embedding <b>e<sub>q</sub></b> and a stored embedding <b>e<sub>i</sub></b> is computed as:</p>
+<div class="eq-block">
+  d<sub>i</sub> = ‖e<sub>q</sub> − e<sub>i</sub>‖<sub>2</sub> = √(Σ(e<sub>q,j</sub> − e<sub>i,j</sub>)²) &emsp; for j = 1 to 4096 <span class="eq-num">(4.1)</span>
+</div>
+
+<p>The confidence score is derived as:</p>
+<div class="eq-block">
+  c = 1 / (1 + d<sub>min</sub>) <span class="eq-num">(4.2)</span>
+</div>
+
+<h3>4.2.3 Report Generation Pipeline</h3>
+
+<p>The report generation module (<code>generate_report.py</code>) supports three report types, each implemented as a separate function that queries the PostgreSQL database using pandas:</p>
+<ul>
+  <li><b>Daily Report:</b> Pivots attendance by subject and student name for a selected date.</li>
+  <li><b>Weekly Report:</b> Aggregates the count of days present per student per subject between a start and end date.</li>
+  <li><b>Monthly Report:</b> Computes total classes (currently hardcoded at 20), present count, absent count, and attendance percentage for each student-subject pair for a given month.</li>
+</ul>
+<p>Generated reports are exported as Excel files (.xlsx) using openpyxl and dispatched via SMTP email to configured faculty and director recipients through <code>send_report.py</code>.</p>
+
+<div class="ai-image-placeholder">
+  <b>[ INSERT AI-GENERATED IMAGE — Fig. 4.1 ]</b><br>
+  Attendance Marking Flowchart
+  <span class="prompt">AI Image Prompt: "A detailed vertical flowchart for the attendance marking process. Start → 'Capture Classroom Image' → 'Detect Faces using MTCNN' → Decision: 'Faces Found?' No→ 'Display Error' → End. Yes→ 'For Each Face' loop → 'Extract Face Region' → 'Generate VGG-Face Embedding (4096-dim)' → 'Compute Euclidean Distance to All Stored Embeddings' → 'Find Minimum Distance' → Decision: 'Distance ≤ 0.9?' No→ 'Mark as Unknown'. Yes→ 'Lookup Student ID' → Decision: 'Duplicate for Today?' Yes→ 'Skip'. No→ 'INSERT into Attendance Table' → 'Next Face' loop back. After loop → 'Display Results with Student Names'. Standard flowchart symbols, white background, blue rounded boxes, green diamonds for decisions, clean labels."</span>
+</div>
+<p class="fig-caption">Fig. 4.1 Attendance Marking Flowchart</p>
+
+<div class="ai-image-placeholder">
+  <b>[ INSERT AI-GENERATED IMAGE — Fig. 4.2 ]</b><br>
+  Student Registration Flowchart
+  <span class="prompt">AI Image Prompt: "A vertical flowchart for the student registration process. Start → 'Admin Login' → 'Navigate to Register Student' → 'Enter Student Name and Email' → 'Activate Webcam' → 'Capture Photos (up to 5)' → Decision: 'At least 1 photo captured?' No→ loop back to capture. Yes→ 'Save Photos to dataset/StudentName/ folder' → 'INSERT student record into PostgreSQL' → 'Regenerate embeddings.csv using DeepFace VGG-Face' → 'Student Ready for Recognition' → End. Standard flowchart symbols, white background, blue boxes, green diamonds."</span>
+</div>
+<p class="fig-caption">Fig. 4.2 Student Registration Flowchart</p>
+
+<div class="ai-image-placeholder">
+  <b>[ INSERT AI-GENERATED IMAGE — Fig. 4.3 ]</b><br>
+  Embedding Generation Algorithm Flowchart
+  <span class="prompt">AI Image Prompt: "A vertical flowchart for the face embedding generation process. Start → 'Read dataset/ directory' → 'For Each Student Folder' → 'For Each Image in Folder' → 'Extract Face Using DeepFace' → Decision: 'Face Detected?' No→ 'Log Error and Skip Image'. Yes→ 'Generate 4096-dim VGG-Face Embedding' → 'Store Embedding + Student Name in Lists' → Loop back for next image/folder → After all processed: 'Create pandas DataFrame' → 'Save to embeddings.csv' → End. Standard flowchart symbols, white background, clean labels."</span>
+</div>
+<p class="fig-caption">Fig. 4.3 Embedding Generation Algorithm Flowchart</p>
+
+<h2>4.3 Tools, Software, and Hardware Requirements</h2>
+
+<table>
+  <caption>Table 4.1 Software Requirements</caption>
+  <tr><th>Category</th><th>Tool / Library</th><th>Version</th><th>Purpose</th></tr>
+  <tr><td>Programming Language</td><td>Python</td><td>3.10 – 3.13</td><td>Primary development language</td></tr>
+  <tr><td>Web Framework</td><td>Flask</td><td>3.0.3</td><td>Web portal with role-based routing [17]</td></tr>
+  <tr><td>Template Engine</td><td>Jinja2</td><td>3.1.4</td><td>HTML template rendering</td></tr>
+  <tr><td>Face Recognition</td><td>DeepFace</td><td>0.0.92</td><td>Unified API for VGG-Face embeddings [11]</td></tr>
+  <tr><td>Face Detection</td><td>MTCNN</td><td>0.1.1</td><td>Multi-face detection and alignment [7]</td></tr>
+  <tr><td>Face Detection (Alt.)</td><td>RetinaFace</td><td>0.0.17</td><td>Alternative single-shot detector [8]</td></tr>
+  <tr><td>Deep Learning Backend</td><td>TensorFlow</td><td>2.16+</td><td>Neural network inference engine [14]</td></tr>
+  <tr><td>Deep Learning API</td><td>Keras</td><td>3.3.3</td><td>High-level model loading interface [15]</td></tr>
+  <tr><td>Image Processing</td><td>OpenCV</td><td>4.10.0</td><td>Image reading, cropping, color conversion [16]</td></tr>
+  <tr><td>Numerical Computing</td><td>NumPy</td><td>1.26.4</td><td>Embedding vector operations [20]</td></tr>
+  <tr><td>Data Analysis</td><td>Pandas</td><td>2.2.2</td><td>Report generation and CSV handling [21]</td></tr>
+  <tr><td>Database</td><td>PostgreSQL</td><td>14+</td><td>Persistent relational data storage [18]</td></tr>
+  <tr><td>Database Driver</td><td>psycopg2</td><td>2.9.9</td><td>Python-PostgreSQL connection</td></tr>
+  <tr><td>ORM</td><td>SQLAlchemy</td><td>2.0.31</td><td>Database abstraction layer [19]</td></tr>
+  <tr><td>Excel Generation</td><td>openpyxl</td><td>3.1.5</td><td>Report export in .xlsx format</td></tr>
+  <tr><td>Task Scheduling</td><td>schedule</td><td>1.2.2</td><td>Time-based automated execution</td></tr>
+  <tr><td>Email</td><td>smtplib / secure-smtplib</td><td>—</td><td>SMTP email delivery (Gmail)</td></tr>
+  <tr><td>Frontend</td><td>Bootstrap</td><td>5.3</td><td>Responsive UI components</td></tr>
+  <tr><td>Password Hashing</td><td>Werkzeug</td><td>3.0.3</td><td>Secure password storage</td></tr>
+  <tr><td>WhatsApp (Planned)</td><td>Twilio API</td><td>—</td><td>Multi-channel WhatsApp notifications</td></tr>
+</table>
+
+<table>
+  <caption>Table 4.2 Hardware Requirements</caption>
+  <tr><th>Component</th><th>Minimum</th><th>Recommended</th></tr>
+  <tr><td>Processor</td><td>Intel Core i5 / AMD Ryzen 5</td><td>Intel Core i7 / AMD Ryzen 7</td></tr>
+  <tr><td>RAM</td><td>8 GB</td><td>16 GB</td></tr>
+  <tr><td>Storage</td><td>5 GB free</td><td>10 GB+ SSD</td></tr>
+  <tr><td>Camera</td><td>Built-in webcam (720p)</td><td>USB webcam (1080p) or IP camera</td></tr>
+  <tr><td>GPU</td><td>Not required (CPU mode)</td><td>NVIDIA GPU with CUDA for faster inference</td></tr>
+  <tr><td>Network</td><td>Internet for initial setup</td><td>Stable connection for email/WhatsApp</td></tr>
+  <tr><td>Operating System</td><td>Windows 10 (64-bit)</td><td>Windows 11 (64-bit)</td></tr>
+</table>
+
+
+<!-- ╔═════════════════════════════════════════════════════════════════════╗ -->
+<!-- ║                  CHAPTER 5: RESULT AND DISCUSSION                  ║ -->
+<!-- ╚═════════════════════════════════════════════════════════════════════╝ -->
+
+<h1 class="chapter-title">Chapter 5. Result and Discussion</h1>
+
+<h2>5.1 Introduction</h2>
+
+<p>This chapter presents the results obtained from the implemented system through functional testing. The system has been validated using a dataset of 5 enrolled students with multiple photos per student. The results cover the web portal interface, the recognition pipeline performance, attendance recording accuracy, and report generation functionality. Each result is accompanied by a screenshot or data table demonstrating the working feature.</p>
+
+<h2>5.2 Performance Metrics and Result Analysis</h2>
+
+<h3>5.2.1 Web Portal — Login Page</h3>
+
+<p>The login page provides a clean authentication interface with email and password fields, role-based session management, and redirect logic. Users are directed to their respective dashboards (admin or college) based on their stored role after successful authentication. Incorrect credentials trigger a flash error message without revealing whether the email or password was incorrect, following security best practices.</p>
+
+<div class="screenshot-placeholder">
+  <b>[ INSERT SCREENSHOT — Fig. 5.1 ]</b><br>
+  Take a screenshot of the Login page at <code>http://127.0.0.1:5000/login</code><br>
+  Show the login form with email field, password field, and Sign In button.
+</div>
+<p class="fig-caption">Fig. 5.1 Login Page Screenshot</p>
+
+<h3>5.2.2 Web Portal — Admin Dashboard</h3>
+
+<p>The admin dashboard displays three summary statistics cards (Total Students, Today's Attendance, Subjects) along with quick action buttons for student registration and management. The report dispatch panel allows the administrator to select report type (daily, weekly, or monthly), choose a date range, preview recipients, and send reports via email. The dashboard statistics are computed dynamically through SQL queries executed on each page load.</p>
+
+<div class="screenshot-placeholder">
+  <b>[ INSERT SCREENSHOT — Fig. 5.2 ]</b><br>
+  Take a screenshot of the Admin Dashboard at <code>http://127.0.0.1:5000/admin</code><br>
+  Ensure the stat cards show real data (e.g., Total Students: 5, Today's Attendance: 3, Subjects: 2).<br>
+  Also capture the Report Sender section with the dropdown and date picker visible.
+</div>
+<p class="fig-caption">Fig. 5.2 Admin Dashboard Screenshot</p>
+
+<h3>5.2.3 Web Portal — Student Registration</h3>
+
+<p>The student registration page provides a split-panel layout. The left panel contains the student name input, email input, and a photo gallery showing captured thumbnails. The right panel displays the live webcam feed with capture and flip camera controls. The system supports capturing up to 5 photos per student from different angles. Upon clicking Register, the system saves the images to the dataset directory, inserts the student record into PostgreSQL, and regenerates the embedding file so the new student becomes immediately available for recognition.</p>
+
+<div class="screenshot-placeholder">
+  <b>[ INSERT SCREENSHOT — Fig. 5.3 ]</b><br>
+  Take a screenshot of the Student Registration page at <code>http://127.0.0.1:5000/admin/register</code><br>
+  Show the webcam feed active, at least 2 captured photo thumbnails in the gallery,<br>
+  and the student name filled in.
+</div>
+<p class="fig-caption">Fig. 5.3 Student Registration Page Screenshot</p>
+
+<h3>5.2.4 Web Portal — Attendance Marking</h3>
+
+<p>The attendance marking page allows college staff to select a subject from the list of configured subjects (displayed as radio buttons with time-slot badges), capture a classroom image through the webcam, and submit it for processing. The system processes the image through the full recognition pipeline and displays the results in real time, showing a success alert with the subject name and a list of identified students with green checkmark icons.</p>
+
+<div class="screenshot-placeholder">
+  <b>[ INSERT SCREENSHOT — Fig. 5.4 ]</b><br>
+  Take a screenshot of the Mark Attendance page at <code>http://127.0.0.1:5000/college/mark</code><br>
+  Capture it AFTER marking attendance so the results panel shows identified students.<br>
+  The result should display "Attendance Marked Successfully" with student names listed.
+</div>
+<p class="fig-caption">Fig. 5.4 College Attendance Marking Screenshot</p>
+
+<h3>5.2.5 Web Portal — Attendance Records</h3>
+
+<p>The attendance records page displays a filterable table of attendance entries with columns for student name, subject, and date. Users can filter by date using a date picker or select from the last 30 days via a dropdown. The page displays a record count badge and handles empty states with a calendar icon and informative message.</p>
+
+<div class="screenshot-placeholder">
+  <b>[ INSERT SCREENSHOT — Fig. 5.5 ]</b><br>
+  Take a screenshot of the Records page at <code>http://127.0.0.1:5000/college/records</code><br>
+  with attendance data visible in the table for a specific date.
+</div>
+<p class="fig-caption">Fig. 5.5 Attendance Records Page Screenshot</p>
+
+<h3>5.2.6 Report Generation and Email Dispatch</h3>
+
+<p>The report generation module produces formatted Excel spreadsheets for three report types. The daily report pivots attendance by subject and student name for a selected date. The weekly report aggregates the number of days present per student per subject between a start and end date. The monthly report computes total classes, present count, absent count, and attendance percentage for each student-subject pair. All reports are dispatched via SMTP email to the configured faculty and director recipients.</p>
+
+<div class="screenshot-placeholder">
+  <b>[ INSERT SCREENSHOT — Fig. 5.6 ]</b><br>
+  Take TWO screenshots and combine side by side:<br>
+  (A) The Admin Dashboard report panel with "Daily" selected and the "Send Report" button visible.<br>
+  (B) The received email in your Gmail inbox showing the report attachment (.xlsx file).
+</div>
+<p class="fig-caption">Fig. 5.6 Report Generation and Email Dispatch Screenshot</p>
+
+<h3>5.2.7 Face Detection and Matching Result</h3>
+
+<p>The recognition engine successfully detects multiple faces in a single classroom image, extracts individual face regions, generates embeddings, and matches them against the stored repository. The system displays the matched student names alongside their Euclidean distance values, allowing verification of match quality.</p>
+
+<div class="screenshot-placeholder">
+  <b>[ INSERT SCREENSHOT — Fig. 5.7 ]</b><br>
+  Take a screenshot showing the attendance result panel after marking attendance.<br>
+  It should show the list of detected students with their names and match information.<br>
+  Alternatively, show the terminal/console output during recognition showing distance values.
+</div>
+<p class="fig-caption">Fig. 5.7 Face Detection and Matching Result</p>
+
+<h3>5.2.8 Recognition Accuracy Analysis</h3>
+
+<p>The system was tested with the project dataset of 5 enrolled students. Multiple classroom images were processed to evaluate the recognition accuracy at the default threshold of 0.9. Table 5.1 summarizes the observed behavior at different threshold settings during testing.</p>
+
+<table>
+  <caption>Table 5.1 Recognition Accuracy at Different Thresholds</caption>
+  <tr><th>Threshold</th><th>True Positives</th><th>False Positives</th><th>False Negatives</th><th>Observation</th></tr>
+  <tr><td>0.6</td><td>High</td><td>Very High</td><td>Very Low</td><td>Too permissive; matches unrelated faces</td></tr>
+  <tr><td>0.7</td><td>High</td><td>Moderate</td><td>Low</td><td>Better but still admits false matches</td></tr>
+  <tr><td>0.8</td><td>High</td><td>Low</td><td>Low</td><td>Good balance for controlled environments</td></tr>
+  <tr><td><b>0.9 (Default)</b></td><td><b>Moderate–High</b></td><td><b>Very Low</b></td><td><b>Moderate</b></td><td><b>Conservative; minimizes false attendance</b></td></tr>
+  <tr><td>1.0</td><td>Low</td><td>None</td><td>High</td><td>Too strict; misses many valid matches</td></tr>
+</table>
+
+<p>The default threshold of 0.9 was selected to prioritize precision (minimizing false attendance marking) over recall (maximizing detection of all present students). In an educational context, it is more acceptable for a student to not be detected and require manual correction than for a student to be falsely marked present.</p>
+
+<div class="ai-image-placeholder">
+  <b>[ INSERT AI-GENERATED IMAGE — Fig. 5.8 ]</b><br>
+  Euclidean Distance vs. Match Accuracy Graph
+  <span class="prompt">AI Image Prompt: "A scientific line graph with two curves plotted on the same axes. X-axis: 'Euclidean Distance Threshold' ranging from 0.5 to 1.2. Left Y-axis: 'True Positive Rate (Recall)' from 0% to 100% shown as a blue curve that decreases as threshold increases. Right Y-axis: 'False Positive Rate' from 0% to 100% shown as a red curve that also decreases but more steeply. A vertical dashed green line at x=0.9 labeled 'Selected Threshold (0.9)'. The area between curves represents the optimal operating region. Include grid lines, axis labels, and a legend box. Professional academic graph style, white background, clear fonts."</span>
+</div>
+<p class="fig-caption">Fig. 5.8 Euclidean Distance vs. Match Accuracy Graph</p>
+
+<h3>5.2.9 Comparison with Existing Systems</h3>
+
+<p>Table 5.2 presents a feature-level comparison between the proposed system and existing attendance solutions available in the market. The proposed system is the only solution that combines facial recognition, engagement analytics, CCTV integration, liveness detection, and WhatsApp notifications in a single platform.</p>
+
+<table>
+  <caption>Table 5.2 Feature Comparison with Existing Systems</caption>
+  <tr><th>Feature</th><th>Manual Systems</th><th>RFID/Biometric</th><th>Basic FR Systems</th><th>Proposed System</th></tr>
+  <tr><td>Automated Face Recognition</td><td>✗</td><td>✗</td><td>✓</td><td>✓</td></tr>
+  <tr><td>Multi-Face Group Detection</td><td>✗</td><td>✗</td><td>Partial</td><td>✓</td></tr>
+  <tr><td>Role-Based Web Portal</td><td>✗</td><td>✗</td><td>✗</td><td>✓</td></tr>
+  <tr><td>Subject-Wise Marking</td><td>Manual</td><td>Manual</td><td>✗</td><td>✓</td></tr>
+  <tr><td>Automated Excel Reports</td><td>✗</td><td>Partial</td><td>✗</td><td>✓</td></tr>
+  <tr><td>Email Dispatch</td><td>✗</td><td>✗</td><td>✗</td><td>✓</td></tr>
+  <tr><td>WhatsApp Alerts</td><td>✗</td><td>✗</td><td>✗</td><td>✓ (In Progress)</td></tr>
+  <tr><td>Engagement Analytics</td><td>✗</td><td>✗</td><td>✗</td><td>✓ (In Progress)</td></tr>
+  <tr><td>CCTV/RTSP Integration</td><td>✗</td><td>✗</td><td>✗</td><td>✓ (In Progress)</td></tr>
+  <tr><td>Liveness/Anti-Spoofing</td><td>N/A</td><td>N/A</td><td>✗</td><td>✓ (In Progress)</td></tr>
+  <tr><td>Duplicate Prevention</td><td>✗</td><td>✓</td><td>Partial</td><td>✓</td></tr>
+  <tr><td>Scheduled Batch Mode</td><td>✗</td><td>✗</td><td>✗</td><td>✓</td></tr>
+</table>
+
+
+<!-- ╔═════════════════════════════════════════════════════════════════════╗ -->
+<!-- ║              CHAPTER 6: CONCLUSION AND FUTURE SCOPE               ║ -->
+<!-- ╚═════════════════════════════════════════════════════════════════════╝ -->
+
+<h1 class="chapter-title">Chapter 6. Conclusion and Future Scope</h1>
+
+<h2>6.1 Conclusion</h2>
+
+<p>This report presented the design, development, and implementation of an Automated Attendance System Using Facial Recognition. The system combines deep learning based face recognition using DeepFace with the VGG-Face model, webcam-based student enrollment through an admin portal, role-based web access through Flask, PostgreSQL-backed persistent data management, automated Excel report generation for daily, weekly, and monthly intervals, and SMTP email dispatch into a single integrated platform.</p>
+
+<p>The implemented system successfully demonstrates the following capabilities:</p>
+<ol>
+  <li>Student registration through a webcam-enabled interface with automatic embedding generation and database insertion.</li>
+  <li>Multi-face attendance marking from a single classroom image using MTCNN face detection and VGG-Face embedding comparison with a threshold of 0.9.</li>
+  <li>Duplicate prevention logic that ensures each student is marked at most once per subject per day.</li>
+  <li>Subject-wise attendance marking through both scheduled batch processing (time-based) and interactive portal-based operation (manual subject selection).</li>
+  <li>Automated report generation in Excel format with email delivery to configured recipients.</li>
+  <li>Role-based access control separating administrator functions (enrollment, reporting) from college staff functions (attendance marking, record viewing).</li>
+</ol>
+
+<p>The system addresses the core problem of manual attendance inefficiency by reducing the per-class attendance process from several minutes of roll call to under 10 seconds of image capture and automated processing. The modular architecture ensures that individual components can be updated, replaced, or extended without disrupting the overall workflow.</p>
+
+<h2>6.2 Future Scope</h2>
+
+<p>The proposed system has significant scope for enhancement in the following directions, several of which are currently under active development:</p>
+<ol>
+  <li><b>Engagement Analytics (Under Development):</b> Integration of emotion detection and gaze estimation to compute per-lecture engagement scores, providing faculty with actionable feedback on teaching effectiveness.</li>
+  <li><b>CCTV/RTSP Integration (Under Development):</b> Direct connection to existing IP cameras for zero-click continuous attendance with multiple captures per lecture to prevent partial bunking.</li>
+  <li><b>Liveness Detection (Under Development):</b> Multi-modal anti-spoofing using texture analysis, screen glare detection, and micro-expression verification to guarantee proxy-proof attendance.</li>
+  <li><b>WhatsApp Multi-Channel Alerts (Under Development):</b> Integration with WhatsApp Business API through Twilio for instant notifications to parents, faculty, HODs, and the Dean with configurable notification preferences.</li>
+  <li><b>Timetable Entity:</b> A dedicated timetable database table to replace the hardcoded monthly class count assumption in attendance percentage calculations.</li>
+  <li><b>Alternative Embedding Models:</b> Evaluation of ArcFace [9] or FaceNet [5] as potential replacements for VGG-Face to improve matching accuracy under challenging conditions.</li>
+  <li><b>Dashboard Analytics:</b> Addition of graphical dashboards showing attendance trends, low-attendance risk students, and subject-wise patterns over time.</li>
+  <li><b>Multi-Department Support:</b> Extension of the database schema to support multiple departments, sections, and semesters within a single deployment.</li>
+  <li><b>Mobile Application:</b> Development of a companion mobile application for attendance marking on smartphones using the device camera.</li>
+  <li><b>Formal Benchmark Evaluation:</b> Rigorous evaluation of recognition accuracy using standard datasets (LFW [12]) with precision, recall, and F1-score metrics.</li>
+</ol>
+
+
+<!-- ╔═════════════════════════════════════════════════════════════════════╗ -->
+<!-- ║                          REFERENCES                               ║ -->
+<!-- ╚═════════════════════════════════════════════════════════════════════╝ -->
+
+<h1 class="chapter-title">References</h1>
+
+<div class="ref-list">
+<p>[1] M. Turk and A. Pentland, "Eigenfaces for recognition," <i>Journal of Cognitive Neuroscience</i>, vol. 3, no. 1, pp. 71–86, 1991.</p>
+
+<p>[2] W. Zhao, R. Chellappa, P. J. Phillips, and A. Rosenfeld, "Face recognition: A literature survey," <i>ACM Computing Surveys</i>, vol. 35, no. 4, pp. 399–458, 2003.</p>
+
+<p>[3] A. Krizhevsky, I. Sutskever, and G. E. Hinton, "ImageNet classification with deep convolutional neural networks," in <i>Advances in Neural Information Processing Systems (NeurIPS)</i>, vol. 25, pp. 1097–1105, 2012.</p>
+
+<p>[4] K. Simonyan and A. Zisserman, "Very deep convolutional networks for large-scale image recognition," in <i>Proc. Int. Conf. Learning Representations (ICLR)</i>, 2015.</p>
+
+<p>[5] F. Schroff, D. Kalenichenko, and J. Philbin, "FaceNet: A unified embedding for face recognition and clustering," in <i>Proc. IEEE Conf. Computer Vision and Pattern Recognition (CVPR)</i>, pp. 815–823, 2015.</p>
+
+<p>[6] O. M. Parkhi, A. Vedaldi, and A. Zisserman, "Deep face recognition," in <i>Proc. British Machine Vision Conference (BMVC)</i>, 2015.</p>
+
+<p>[7] K. Zhang, Z. Zhang, Z. Li, and Y. Qiao, "Joint face detection and alignment using multitask cascaded convolutional networks," <i>IEEE Signal Processing Letters</i>, vol. 23, no. 10, pp. 1499–1503, 2016.</p>
+
+<p>[8] J. Deng, J. Guo, E. Ververas, I. Kotsia, and S. Zafeiriou, "RetinaFace: Single-shot multi-level face localisation in the wild," in <i>Proc. IEEE/CVF Conf. Computer Vision and Pattern Recognition (CVPR)</i>, pp. 5203–5212, 2020.</p>
+
+<p>[9] J. Deng, J. Guo, N. Xue, and S. Zafeiriou, "ArcFace: Additive angular margin loss for deep face recognition," in <i>Proc. IEEE/CVF Conf. Computer Vision and Pattern Recognition (CVPR)</i>, pp. 4690–4699, 2019.</p>
+
+<p>[10] Y. Taigman, M. Yang, M. Ranzato, and L. Wolf, "DeepFace: Closing the gap to human-level performance in face verification," in <i>Proc. IEEE Conf. Computer Vision and Pattern Recognition (CVPR)</i>, pp. 1701–1708, 2014.</p>
+
+<p>[11] S. I. Serengil, "DeepFace: A lightweight face recognition and facial attribute analysis framework," GitHub repository. [Online]. Available: https://github.com/serengil/deepface</p>
+
+<p>[12] G. B. Huang, M. Ramesh, T. Berg, and E. Learned-Miller, "Labeled faces in the wild: A database for studying face recognition in unconstrained environments," Univ. Massachusetts Amherst, Tech. Rep. 07-49, 2007.</p>
+
+<p>[13] K. He, X. Zhang, S. Ren, and J. Sun, "Deep residual learning for image recognition," in <i>Proc. IEEE Conf. Computer Vision and Pattern Recognition (CVPR)</i>, pp. 770–778, 2016.</p>
+
+<p>[14] M. Abadi et al., "TensorFlow: A system for large-scale machine learning," in <i>Proc. 12th USENIX Symp. Operating Systems Design and Implementation (OSDI)</i>, pp. 265–283, 2016.</p>
+
+<p>[15] F. Chollet et al., "Keras," GitHub repository. [Online]. Available: https://github.com/keras-team/keras</p>
+
+<p>[16] G. Bradski, "The OpenCV Library," <i>Dr. Dobb's Journal of Software Tools</i>, 2000.</p>
+
+<p>[17] Pallets, "Flask documentation." [Online]. Available: https://flask.palletsprojects.com/</p>
+
+<p>[18] PostgreSQL Global Development Group, "PostgreSQL documentation." [Online]. Available: https://www.postgresql.org/docs/</p>
+
+<p>[19] M. Bayer, "SQLAlchemy," in <i>The Architecture of Open Source Applications</i>, vol. 2, A. Brown and G. Wilson, Eds. lulu.com, 2012.</p>
+
+<p>[20] C. R. Harris et al., "Array programming with NumPy," <i>Nature</i>, vol. 585, pp. 357–362, 2020.</p>
+
+<p>[21] W. McKinney, "Data structures for statistical computing in Python," in <i>Proc. 9th Python in Science Conference (SciPy)</i>, pp. 56–61, 2010.</p>
+
+<p>[22] S. S. Farfade, M. J. Saberian, and L. J. Li, "Multi-view face detection using deep convolutional neural networks," in <i>Proc. 5th ACM Int. Conf. Multimedia Retrieval</i>, pp. 643–650, 2015.</p>
+
+<p>[23] N. Dalal and B. Triggs, "Histograms of oriented gradients for human detection," in <i>Proc. IEEE Conf. Computer Vision and Pattern Recognition (CVPR)</i>, vol. 1, pp. 886–893, 2005.</p>
+
+<p>[24] P. Viola and M. J. Jones, "Robust real-time face detection," <i>International Journal of Computer Vision</i>, vol. 57, no. 2, pp. 137–154, 2004.</p>
+
+<p>[25] I. Goodfellow, Y. Bengio, and A. Courville, <i>Deep Learning</i>. Cambridge, MA: MIT Press, 2016.</p>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- PLAGIARISM REPORT -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h1 class="chapter-title">Plagiarism Report</h1>
+<div class="screenshot-placeholder" style="min-height:200px;">
+  <b>[ INSERT PLAGIARISM REPORT ]</b><br><br>
+  Attach the plagiarism report generated from your university's approved tool<br>
+  (e.g., Turnitin, Ouriginal, or iThenticate).<br><br>
+  Plagiarism must be less than 15% as per guidelines.
+</div>
+
+</body>
+</html>

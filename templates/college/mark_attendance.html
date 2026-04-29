@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+{% block title %}Mark Attendance – AttendanceAI{% endblock %}
+{% block page_title %}Mark Attendance{% endblock %}
+{% block extra_css %}
+<style>
+  #camera-feed { width:100%; border-radius:12px; background:#000; max-height:380px; object-fit:cover; }
+  .period-radio { display:none; }
+  .period-label { display:flex; align-items:center; gap:10px; padding:12px 14px; border:2px solid #dee2e6;
+                  border-radius:10px; cursor:pointer; transition:all .15s; margin-bottom:8px; }
+  .period-label:hover { border-color:#0d6efd; background:#f8f9ff; }
+  .period-radio:checked + .period-label { border-color:#0d6efd; background:#e7f0ff; font-weight:600; }
+  .period-label.recess { opacity:0.5; pointer-events:none; border-style:dashed; }
+</style>
+{% endblock %}
+{% block content %}
+
+<div class="row g-4">
+  <!-- Left: Selector + Camera -->
+  <div class="col-lg-6">
+    <!-- Class/Section/Period Picker -->
+    <div class="card p-4 mb-4">
+      <h6 class="fw-bold mb-3"><i class="bi bi-book me-2 text-primary"></i>Select Class & Period</h6>
+      <div class="row g-2 mb-3">
+        <div class="col-6">
+          <select id="markClassSelect" class="form-select form-select-sm">
+            <option value="">Select Class</option>
+            {% for c in classes %}
+            <option value="{{ c[0] }}">{{ c[1] }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-6">
+          <select id="markSectionSelect" class="form-select form-select-sm">
+            <option value="">Select Section</option>
+          </select>
+        </div>
+      </div>
+      <div id="period-list"></div>
+      <div id="no-periods" class="text-muted small text-center py-2 d-none">
+        Select a class and section to see today's periods.
+      </div>
+    </div>
+
+    <!-- Camera -->
+    <div class="card p-4">
+      <h6 class="fw-bold mb-3"><i class="bi bi-camera me-2 text-primary"></i>Camera</h6>
+      <div id="camera-error" class="alert alert-danger d-none small"></div>
+      <video id="camera-feed" autoplay playsinline muted></video>
+      <div class="d-flex gap-2 mt-3">
+        <button id="capture-btn" class="btn btn-success flex-grow-1 fw-semibold" onclick="captureAndMark()">
+          <i class="bi bi-camera-fill me-2"></i>Capture & Mark Attendance
+        </button>
+        <button class="btn btn-outline-secondary" onclick="flipCamera()"><i class="bi bi-arrow-repeat"></i></button>
+      </div>
+      <div class="text-muted small mt-2">
+        <i class="bi bi-info-circle me-1"></i>Select class, section, and period above, then capture.
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Result -->
+  <div class="col-lg-6">
+    <div class="card p-4 h-100">
+      <h6 class="fw-bold mb-3"><i class="bi bi-clipboard2-check me-2 text-success"></i>Result</h6>
+      <div id="idle" class="text-center text-muted py-5">
+        <i class="bi bi-camera fs-1 d-block mb-2 opacity-25"></i>
+        Select a period, then capture a class photo
+      </div>
+      <div id="loading" class="text-center py-5 d-none">
+        <div class="spinner-border text-primary" role="status"></div>
+        <div class="small text-muted mt-2">Processing faces…</div>
+      </div>
+      <div id="result" class="d-none"></div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+let stream = null;
+let facingMode = 'user';
+
+async function startCamera() {
+  try {
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode, width:1280, height:720 } });
+    document.getElementById('camera-feed').srcObject = stream;
+    document.getElementById('camera-error').classList.add('d-none');
+  } catch(e) {
+    const el = document.getElementById('camera-error');
+    el.classList.remove('d-none');
+    el.textContent = 'Camera error: ' + e.message;
+  }
+}
+
+function flipCamera() {
+  facingMode = facingMode === 'user' ? 'environment' : 'user';
+  startCamera();
+}
+
+// Class → Section AJAX
+document.getElementById('markClassSelect').addEventListener('change', function() {
+  const classId = this.value;
+  const secSel = document.getElementById('markSectionSelect');
+  secSel.innerHTML = '<option value="">Select Section</option>';
+  document.getElementById('period-list').innerHTML = '';
+  if (!classId) return;
+  fetch('/api/sections/' + classId)
+    .then(r => r.json())
+    .then(data => {
+      data.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = s.name;
+        secSel.appendChild(opt);
+      });
+    });
+});
+
+// Section → Period AJAX (today's timetable)
+document.getElementById('markSectionSelect').addEventListener('change', function() {
+  const sectionId = this.value;
+  const periodDiv = document.getElementById('period-list');
+  periodDiv.innerHTML = '';
+  document.getElementById('no-periods').classList.add('d-none');
+  if (!sectionId) return;
+  fetch('/api/timetable/' + sectionId)
+    .then(r => r.json())
+    .then(data => {
+      if (data.length === 0) {
+        document.getElementById('no-periods').classList.remove('d-none');
+        document.getElementById('no-periods').textContent = 'No periods scheduled for today.';
+        return;
+      }
+      data.forEach(p => {
+        if (p.is_recess) {
+          periodDiv.innerHTML += `
+            <div class="period-label recess">
+              <i class="bi bi-cup-hot text-warning"></i>
+              <span>${p.name}</span>
+              <span class="badge bg-warning text-dark ms-auto">${p.time}</span>
+            </div>`;
+        } else {
+          periodDiv.innerHTML += `
+            <input type="radio" name="period" id="per_${p.id}" value="${p.id}" class="period-radio">
+            <label for="per_${p.id}" class="period-label">
+              <i class="bi bi-journal-text text-primary"></i>
+              <span>${p.name}${p.teacher ? ' <small class="text-muted">(' + p.teacher + ')</small>' : ''}</span>
+              <span class="badge bg-light text-secondary border ms-auto">${p.time}</span>
+            </label>`;
+        }
+      });
+    });
+});
+
+async function captureAndMark() {
+  const sectionId = document.getElementById('markSectionSelect').value;
+  if (!sectionId) { alert('Please select a class and section.'); return; }
+
+  const checkedPeriod = document.querySelector('input[name="period"]:checked');
+  const periodId = checkedPeriod ? checkedPeriod.value : null;
+
+  const video = document.getElementById('camera-feed');
+  if (!stream) { alert('Camera not available'); return; }
+
+  const canvas = document.createElement('canvas');
+  canvas.width  = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  const photo = canvas.toDataURL('image/jpeg', 0.85);
+
+  document.getElementById('idle').classList.add('d-none');
+  document.getElementById('loading').classList.remove('d-none');
+  document.getElementById('result').classList.add('d-none');
+  document.getElementById('capture-btn').disabled = true;
+
+  try {
+    const resp = await fetch('/college/mark', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ photo, section_id: sectionId, period_id: periodId })
+    });
+    const data = await resp.json();
+    showResult(data);
+  } catch(e) {
+    showResult({ error: 'Network error: ' + e.message });
+  } finally {
+    document.getElementById('loading').classList.add('d-none');
+    document.getElementById('capture-btn').disabled = false;
+  }
+}
+
+function showResult(data) {
+  const div = document.getElementById('result');
+  div.classList.remove('d-none');
+
+  if (data.error) {
+    div.innerHTML = `<div class="alert alert-warning"><i class="bi bi-exclamation-triangle me-2"></i>${data.error}</div>`;
+    return;
+  }
+
+  const students   = data.students_present  || [];
+  const identified = data.identified_persons || data.identified || [];
+
+  let html = `
+    <div class="alert alert-success py-2 mb-3">
+      <i class="bi bi-check-circle me-2"></i><strong>Attendance marked!</strong>
+    </div>`;
+
+  if (data.subject_name) html += `<div class="mb-1 small"><strong>Period:</strong> ${data.subject_name}</div>`;
+  if (data.class_time)   html += `<div class="mb-3 small"><strong>Time:</strong> ${data.class_time}</div>`;
+
+  if (students.length > 0) {
+    html += `<div class="fw-semibold small mb-2">Students Present (${students.length}):</div>
+    <ul class="list-group list-group-flush mb-3">`;
+    students.forEach(s => {
+      html += `<li class="list-group-item px-0 py-2 small">
+        <i class="bi bi-person-check-fill text-success me-2"></i>${s.name || s}
+      </li>`;
+    });
+    html += `</ul>`;
+  } else if (identified.length > 0) {
+    html += `<div class="fw-semibold small mb-2">Identified (${identified.length}):</div>
+    <ul class="list-group list-group-flush mb-3">`;
+    identified.forEach(p => {
+      html += `<li class="list-group-item px-0 py-2 small">
+        <i class="bi bi-person-check-fill text-success me-2"></i>${p.name || p}
+      </li>`;
+    });
+    html += `</ul>`;
+  } else {
+    html += `<div class="alert alert-info small">
+      <i class="bi bi-info-circle me-2"></i>No faces matched registered students.
+      <ul class="mb-0 mt-1"><li>Ensure good lighting</li><li>Look directly at camera</li><li>Register more photos</li></ul>
+    </div>`;
+  }
+
+  // Liveness indicator
+  if (data.liveness) {
+    const lv = data.liveness;
+    html += `<div class="border rounded p-2 mb-2 small d-flex align-items-center gap-2">
+      <i class="bi bi-shield-${lv.is_live ? 'check text-success' : 'x text-danger'}"></i>
+      <span>Liveness: <strong>${lv.is_live ? 'PASS' : 'FAIL'}</strong> (${(lv.confidence*100).toFixed(0)}% confidence)</span>
+    </div>`;
+  }
+
+  // Engagement metrics
+  if (data.engagement) {
+    const eg = data.engagement;
+    html += `<div class="border rounded p-2 small">
+      <div class="fw-semibold mb-1"><i class="bi bi-graph-up me-1 text-primary"></i>Engagement</div>
+      <div class="progress mb-1" style="height:16px">
+        <div class="progress-bar bg-success" style="width:${eg.attentive_pct}%">${eg.attentive_pct.toFixed(0)}%</div>
+        <div class="progress-bar bg-warning" style="width:${eg.confused_pct}%">${eg.confused_pct.toFixed(0)}%</div>
+        <div class="progress-bar bg-danger" style="width:${eg.distracted_pct}%">${eg.distracted_pct.toFixed(0)}%</div>
+      </div>
+      <div class="text-muted" style="font-size:11px">${eg.total_faces} faces | Score: ${(eg.avg_score*100).toFixed(0)}%</div>
+    </div>`;
+  }
+
+  div.innerHTML = html;
+}
+
+window.addEventListener('load', startCamera);
+</script>
+{% endblock %}

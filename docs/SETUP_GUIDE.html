@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SETUP_GUIDE.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="college-automated-attendance-system--complete-setup-guide">College Automated Attendance System — Complete Setup Guide</h1>
+<blockquote>
+<p><strong>For a brand new Windows PC with nothing installed.</strong>
+Follow every step exactly. Do not skip anything.</p>
+</blockquote>
+<hr>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#1-prerequisites">Prerequisites (What You Need Before Starting)</a></li>
+<li><a href="#2-download-the-project">Download the Project</a></li>
+<li><a href="#3-one-click-automated-setup">One-Click Automated Setup</a></li>
+<li><a href="#4-manual-setup-step-by-step">Manual Setup (Step by Step)</a></li>
+<li><a href="#5-running-the-application">Running the Application</a></li>
+<li><a href="#6-first-time-usage">First Time Usage</a></li>
+<li><a href="#7-gmail-app-password-setup">Gmail App Password Setup</a></li>
+<li><a href="#8-troubleshooting">Troubleshooting</a></li>
+</ol>
+<hr>
+<h2 id="1-prerequisites">1. Prerequisites</h2>
+<p>Before you begin, make sure you have:</p>
+<ul>
+<li>A <strong>Windows 10 or 11</strong> computer (64-bit)</li>
+<li>An <strong>internet connection</strong> (you will download ~2 GB of data)</li>
+<li>A <strong>webcam</strong> (built-in or USB — needed for student registration &amp; attendance)</li>
+<li>At least <strong>8 GB RAM</strong> (16 GB recommended)</li>
+<li>At least <strong>5 GB free disk space</strong></li>
+<li>A <strong>Gmail account</strong> (for sending attendance reports — optional but recommended)</li>
+</ul>
+<hr>
+<h2 id="2-download-the-project">2. Download the Project</h2>
+<p>If you already have the project folder, skip to Step 3.</p>
+<h3 id="option-a-download-as-zip">Option A: Download as ZIP</h3>
+<ol>
+<li>Go to the project GitHub/source page</li>
+<li>Click <strong>&quot;Code&quot; → &quot;Download ZIP&quot;</strong></li>
+<li>Extract the ZIP to your Desktop</li>
+<li>You should have a folder like: <code>C:\Users\YourName\Desktop\College_Automated_Attendance-master</code></li>
+</ol>
+<h3 id="option-b-using-git-if-installed">Option B: Using Git (if installed)</h3>
+<pre class="hljs"><code><div>git clone &lt;repository-url&gt;
+</div></code></pre>
+<hr>
+<h2 id="3-one-click-automated-setup">3. One-Click Automated Setup</h2>
+<blockquote>
+<p><strong>This is the easiest method. One script installs everything.</strong></p>
+</blockquote>
+<h3 id="step-31--open-powershell-as-administrator">Step 3.1 — Open PowerShell as Administrator</h3>
+<ol>
+<li>Press <strong>Windows key</strong> on your keyboard</li>
+<li>Type <strong>PowerShell</strong></li>
+<li>Right-click on <strong>&quot;Windows PowerShell&quot;</strong></li>
+<li>Click <strong>&quot;Run as administrator&quot;</strong></li>
+<li>Click <strong>&quot;Yes&quot;</strong> when Windows asks for permission</li>
+</ol>
+<h3 id="step-32--allow-script-execution">Step 3.2 — Allow Script Execution</h3>
+<p>In the PowerShell window, type this command and press Enter:</p>
+<pre class="hljs"><code><div><span class="hljs-built_in">Set-ExecutionPolicy</span> RemoteSigned <span class="hljs-literal">-Scope</span> CurrentUser <span class="hljs-literal">-Force</span>
+</div></code></pre>
+<h3 id="step-33--navigate-to-project-folder">Step 3.3 — Navigate to Project Folder</h3>
+<p>Type this command (change the path to match where you extracted the project):</p>
+<pre class="hljs"><code><div>cd <span class="hljs-string">"<span class="hljs-variable">$env:USERPROFILE</span>\Desktop\College_Automated_Attendance-master\College_Automated_Attendance-master"</span>
+</div></code></pre>
+<h3 id="step-34--run-the-setup-script">Step 3.4 — Run the Setup Script</h3>
+<pre class="hljs"><code><div>.\setup.ps1
+</div></code></pre>
+<h3 id="step-35--answer-the-questions">Step 3.5 — Answer the Questions</h3>
+<p>The script will ask you these questions one by one:</p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>What to Enter</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PostgreSQL password</td>
+<td>Any password you want (remember it!)</td>
+<td><code>MySecurePass123</code></td>
+</tr>
+<tr>
+<td>Gmail address</td>
+<td>Your Gmail address</td>
+<td><code>john@gmail.com</code></td>
+</tr>
+<tr>
+<td>Gmail App Password</td>
+<td>16-character app password (<a href="#7-gmail-app-password-setup">see Section 7</a>)</td>
+<td><code>abcd efgh ijkl mnop</code></td>
+</tr>
+<tr>
+<td>Faculty email</td>
+<td>Email to receive reports (press Enter to use your Gmail)</td>
+<td><code>faculty@college.edu</code></td>
+</tr>
+<tr>
+<td>Director email</td>
+<td>Email to receive reports (press Enter to use your Gmail)</td>
+<td><code>director@college.edu</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="step-36--wait">Step 3.6 — Wait</h3>
+<p>The script will automatically:</p>
+<ol>
+<li>Install Chocolatey (package manager)</li>
+<li>Install Python 3.12</li>
+<li>Install PostgreSQL (database)</li>
+<li>Install Visual Studio Build Tools (for compiling packages)</li>
+<li>Install CMake</li>
+<li>Create the database and all required tables</li>
+<li>Create a Python virtual environment at <code>C:\av</code></li>
+<li>Install all Python packages</li>
+<li>Configure the project with your settings</li>
+<li>Create a <code>START_APP.bat</code> launcher</li>
+</ol>
+<p><strong>This takes 15-30 minutes</strong> depending on your internet speed. Do not close the window.</p>
+<h3 id="step-37--done">Step 3.7 — Done!</h3>
+<p>When you see <strong>&quot;SETUP COMPLETE!&quot;</strong>, everything is installed. Skip to <a href="#5-running-the-application">Section 5: Running the Application</a>.</p>
+<hr>
+<h2 id="4-manual-setup-step-by-step">4. Manual Setup (Step by Step)</h2>
+<blockquote>
+<p><strong>Only follow this section if the automated setup (Section 3) failed or you prefer doing it yourself.</strong></p>
+</blockquote>
+<hr>
+<h3 id="step-41--install-python-312">Step 4.1 — Install Python 3.12</h3>
+<ol>
+<li>Open your browser and go to: <strong>https://www.python.org/downloads/</strong></li>
+<li>Click <strong>&quot;Download Python 3.12.x&quot;</strong> (any 3.12 version is fine)</li>
+<li>Run the downloaded installer</li>
+<li><strong>⚠️ VERY IMPORTANT: Check the box that says &quot;Add python.exe to PATH&quot;</strong> at the bottom of the installer window</li>
+<li>Click <strong>&quot;Install Now&quot;</strong></li>
+<li>Wait for installation to finish</li>
+<li>Click <strong>&quot;Close&quot;</strong></li>
+</ol>
+<p><strong>Verify it works:</strong></p>
+<ul>
+<li>Press <strong>Windows key</strong>, type <strong>powershell</strong>, press <strong>Enter</strong></li>
+<li>Type: <code>python --version</code></li>
+<li>You should see something like: <code>Python 3.12.4</code></li>
+<li>If you see an error, you forgot to check &quot;Add to PATH&quot; — uninstall and reinstall Python</li>
+</ul>
+<hr>
+<h3 id="step-42--install-postgresql">Step 4.2 — Install PostgreSQL</h3>
+<ol>
+<li>Open your browser and go to: <strong>https://www.postgresql.org/download/windows/</strong></li>
+<li>Click <strong>&quot;Download the installer&quot;</strong> (from EDB/EnterpriseDB)</li>
+<li>Download the latest version for Windows x86-64</li>
+<li>Run the downloaded installer</li>
+<li>Click <strong>Next</strong> through the screens</li>
+<li>When asked for an <strong>installation directory</strong>, keep the default and click <strong>Next</strong></li>
+<li>When asked for <strong>components</strong>, keep all checked and click <strong>Next</strong></li>
+<li>When asked for a <strong>data directory</strong>, keep the default and click <strong>Next</strong></li>
+<li><strong>⚠️ When asked for a password</strong> — type a password and <strong>WRITE IT DOWN</strong> on paper. You need this later!</li>
+<li>When asked for a <strong>port</strong>, keep <strong>5432</strong> and click <strong>Next</strong></li>
+<li>Click <strong>Next</strong> → <strong>Next</strong> → <strong>Install</strong></li>
+<li>Wait for installation (2-5 minutes)</li>
+<li><strong>Uncheck</strong> &quot;Launch Stack Builder at exit&quot; and click <strong>Finish</strong></li>
+</ol>
+<p><strong>Add PostgreSQL to your PATH:</strong></p>
+<ol>
+<li>Press <strong>Windows key</strong>, type <strong>&quot;environment variables&quot;</strong>, click <strong>&quot;Edit the system environment variables&quot;</strong></li>
+<li>Click the <strong>&quot;Environment Variables...&quot;</strong> button at the bottom</li>
+<li>In the bottom section (<strong>System variables</strong>), find <strong>Path</strong>, click on it, then click <strong>Edit</strong></li>
+<li>Click <strong>New</strong></li>
+<li>Type: <code>C:\Program Files\PostgreSQL\17\bin</code> (change <code>17</code> to match your installed version number — check the folder in <code>C:\Program Files\PostgreSQL\</code>)</li>
+<li>Click <strong>OK</strong> → <strong>OK</strong> → <strong>OK</strong></li>
+</ol>
+<p><strong>Verify it works:</strong></p>
+<ul>
+<li><strong>Close all PowerShell windows</strong> and open a new one</li>
+<li>Type: <code>psql --version</code></li>
+<li>You should see something like: <code>psql (PostgreSQL) 17.x</code></li>
+</ul>
+<hr>
+<h3 id="step-43--install-visual-studio-build-tools">Step 4.3 — Install Visual Studio Build Tools</h3>
+<ol>
+<li>Open your browser and go to: <strong>https://visualstudio.microsoft.com/visual-cpp-build-tools/</strong></li>
+<li>Click <strong>&quot;Download Build Tools&quot;</strong></li>
+<li>Run the downloaded file</li>
+<li>The Visual Studio Installer will open</li>
+<li>Check the box for <strong>&quot;Desktop development with C++&quot;</strong></li>
+<li>Click <strong>Install</strong> (bottom right)</li>
+<li>Wait for installation (5-15 minutes, it downloads ~2 GB)</li>
+<li><strong>Restart your computer</strong> when asked</li>
+</ol>
+<hr>
+<h3 id="step-44--install-cmake">Step 4.4 — Install CMake</h3>
+<ol>
+<li>Open your browser and go to: <strong>https://cmake.org/download/</strong></li>
+<li>Under <strong>&quot;Latest Release&quot;</strong>, find <strong>&quot;Windows x64 Installer&quot;</strong> and download the <code>.msi</code> file</li>
+<li>Run the installer</li>
+<li>Click <strong>Next</strong></li>
+<li><strong>⚠️ Select &quot;Add CMake to the system PATH for all users&quot;</strong></li>
+<li>Click <strong>Next</strong> → <strong>Install</strong> → <strong>Finish</strong></li>
+</ol>
+<hr>
+<h3 id="step-45--create-the-database">Step 4.5 — Create the Database</h3>
+<ol>
+<li>Open PowerShell</li>
+<li>Type this command and press Enter:</li>
+</ol>
+<pre class="hljs"><code><div>psql <span class="hljs-literal">-U</span> postgres <span class="hljs-literal">-h</span> localhost
+</div></code></pre>
+<ol start="3">
+<li>When asked for a password, type your <strong>PostgreSQL password</strong> (the one from Step 4.2) and press Enter</li>
+<li>You are now in the PostgreSQL prompt (you'll see <code>postgres=#</code>)</li>
+<li>Copy and paste each of these commands one at a time, pressing Enter after each:</li>
+</ol>
+<pre class="hljs"><code><div><span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">DATABASE</span> autoattendance;
+</div></code></pre>
+<pre class="hljs"><code><div>\c autoattendance
+</div></code></pre>
+<p>(You'll see: <code>You are now connected to database &quot;autoattendance&quot;</code>)</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> <span class="hljs-keyword">IF</span> <span class="hljs-keyword">NOT</span> <span class="hljs-keyword">EXISTS</span> student (
+    std_id  <span class="hljs-built_in">SERIAL</span> PRIMARY <span class="hljs-keyword">KEY</span>,
+    <span class="hljs-keyword">name</span>    <span class="hljs-built_in">VARCHAR</span>(<span class="hljs-number">100</span>) <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span>,
+    email   <span class="hljs-built_in">VARCHAR</span>(<span class="hljs-number">100</span>)
+);
+</div></code></pre>
+<pre class="hljs"><code><div><span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> <span class="hljs-keyword">IF</span> <span class="hljs-keyword">NOT</span> <span class="hljs-keyword">EXISTS</span> subject (
+    sub_id      <span class="hljs-built_in">SERIAL</span> PRIMARY <span class="hljs-keyword">KEY</span>,
+    <span class="hljs-keyword">name</span>        <span class="hljs-built_in">VARCHAR</span>(<span class="hljs-number">100</span>) <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span>,
+    faculty_id  <span class="hljs-built_in">INTEGER</span>,
+    from_time   <span class="hljs-built_in">TIME</span> <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span>,
+    to_time     <span class="hljs-built_in">TIME</span> <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span>
+);
+</div></code></pre>
+<pre class="hljs"><code><div><span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> <span class="hljs-keyword">IF</span> <span class="hljs-keyword">NOT</span> <span class="hljs-keyword">EXISTS</span> attendance (
+    <span class="hljs-keyword">id</span>          <span class="hljs-built_in">SERIAL</span> PRIMARY <span class="hljs-keyword">KEY</span>,
+    <span class="hljs-built_in">date</span>        <span class="hljs-built_in">DATE</span> <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span>,
+    subject_id  <span class="hljs-built_in">INTEGER</span> <span class="hljs-keyword">REFERENCES</span> subject(sub_id),
+    student_id  <span class="hljs-built_in">INTEGER</span> <span class="hljs-keyword">REFERENCES</span> student(std_id),
+    image       <span class="hljs-built_in">TEXT</span>
+);
+</div></code></pre>
+<pre class="hljs"><code><div><span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> <span class="hljs-keyword">IF</span> <span class="hljs-keyword">NOT</span> <span class="hljs-keyword">EXISTS</span> <span class="hljs-keyword">users</span> (
+    <span class="hljs-keyword">id</span>             <span class="hljs-built_in">SERIAL</span> PRIMARY <span class="hljs-keyword">KEY</span>,
+    <span class="hljs-keyword">name</span>           <span class="hljs-built_in">VARCHAR</span>(<span class="hljs-number">100</span>) <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span>,
+    email          <span class="hljs-built_in">VARCHAR</span>(<span class="hljs-number">100</span>) <span class="hljs-keyword">UNIQUE</span> <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span>,
+    password_hash  <span class="hljs-built_in">VARCHAR</span>(<span class="hljs-number">255</span>) <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span>,
+    <span class="hljs-keyword">role</span>           <span class="hljs-built_in">VARCHAR</span>(<span class="hljs-number">20</span>)  <span class="hljs-keyword">NOT</span> <span class="hljs-literal">NULL</span> <span class="hljs-keyword">CHECK</span> (<span class="hljs-keyword">role</span> <span class="hljs-keyword">IN</span> (<span class="hljs-string">'admin'</span>,<span class="hljs-string">'college'</span>))
+);
+</div></code></pre>
+<ol start="6">
+<li>Type <code>\q</code> and press Enter to exit PostgreSQL</li>
+</ol>
+<hr>
+<h3 id="step-46--create-python-virtual-environment">Step 4.6 — Create Python Virtual Environment</h3>
+<p>Open PowerShell and run these commands:</p>
+<pre class="hljs"><code><div>python <span class="hljs-literal">-m</span> venv C:\av
+</div></code></pre>
+<p>This creates a virtual environment at <code>C:\av</code>. We use a short path to avoid Windows long-path problems.</p>
+<hr>
+<h3 id="step-47--install-python-packages">Step 4.7 — Install Python Packages</h3>
+<p>Run these commands one by one in PowerShell:</p>
+<pre class="hljs"><code><div><span class="hljs-comment"># Allow activation scripts</span>
+<span class="hljs-built_in">Set-ExecutionPolicy</span> RemoteSigned <span class="hljs-literal">-Scope</span> CurrentUser <span class="hljs-literal">-Force</span>
+
+<span class="hljs-comment"># Activate virtual environment</span>
+C:\av\Scripts\Activate.ps1
+
+<span class="hljs-comment"># Upgrade pip</span>
+python <span class="hljs-literal">-m</span> pip install -<span class="hljs-literal">-upgrade</span> pip
+
+<span class="hljs-comment"># Navigate to project folder (change path if different)</span>
+cd <span class="hljs-string">"<span class="hljs-variable">$env:USERPROFILE</span>\Desktop\College_Automated_Attendance-master\College_Automated_Attendance-master"</span>
+
+<span class="hljs-comment"># Install all required packages</span>
+pip install <span class="hljs-literal">-r</span> requirements_py313.txt
+</div></code></pre>
+<p><strong>This will take 5-15 minutes.</strong> You'll see a lot of text scrolling — that's normal. Wait until you see the command prompt again with no errors.</p>
+<hr>
+<h3 id="step-48--configure-the-project">Step 4.8 — Configure the Project</h3>
+<ol>
+<li>Open the project folder in File Explorer</li>
+<li>Find the file called <code>config.py</code></li>
+<li>Right-click on it → <strong>Open with</strong> → <strong>Notepad</strong> (or any text editor)</li>
+<li>Change the file to look like this (replace the values with your own):</li>
+</ol>
+<pre class="hljs"><code><div>DB_PARAMS = {
+    <span class="hljs-string">"dbname"</span>: <span class="hljs-string">"autoattendance"</span>,
+    <span class="hljs-string">"user"</span>: <span class="hljs-string">"postgres"</span>,
+    <span class="hljs-string">"password"</span>: <span class="hljs-string">"YOUR_POSTGRESQL_PASSWORD_HERE"</span>,
+    <span class="hljs-string">"host"</span>: <span class="hljs-string">"localhost"</span>
+}
+
+EMAIL_CONFIG = {
+    <span class="hljs-string">"sender_email"</span>: <span class="hljs-string">"your_email@gmail.com"</span>,
+    <span class="hljs-string">"sender_password"</span>: <span class="hljs-string">"your 16 char app password"</span>
+}
+
+faculty_emails = [<span class="hljs-string">"faculty@college.edu"</span>]
+director_email = <span class="hljs-string">"director@college.edu"</span>
+</div></code></pre>
+<ol start="5">
+<li>Replace these values:
+<ul>
+<li><code>YOUR_POSTGRESQL_PASSWORD_HERE</code> → the password you set in Step 4.2</li>
+<li><code>your_email@gmail.com</code> → your real Gmail address</li>
+<li><code>your 16 char app password</code> → your Gmail App Password (<a href="#7-gmail-app-password-setup">see Section 7</a>)</li>
+<li>Email addresses for faculty and director</li>
+</ul>
+</li>
+<li>Press <strong>Ctrl+S</strong> to save</li>
+<li>Close Notepad</li>
+</ol>
+<hr>
+<h2 id="5-running-the-application">5. Running the Application</h2>
+<h3 id="option-a-using-the-launcher-automated-setup-only">Option A: Using the launcher (automated setup only)</h3>
+<ol>
+<li>Open the project folder in File Explorer</li>
+<li>Double-click <strong><code>START_APP.bat</code></strong></li>
+<li>A black terminal window will open</li>
+<li>Wait until you see: <code>* Running on http://127.0.0.1:5000</code></li>
+<li>Open your web browser (Chrome, Edge, Firefox — any will work)</li>
+<li>Type in the address bar: <strong>http://127.0.0.1:5000</strong> and press Enter</li>
+</ol>
+<h3 id="option-b-from-powershell">Option B: From PowerShell</h3>
+<pre class="hljs"><code><div>cd <span class="hljs-string">"<span class="hljs-variable">$env:USERPROFILE</span>\Desktop\College_Automated_Attendance-master\College_Automated_Attendance-master"</span>
+C:\av\Scripts\python.exe app.py
+</div></code></pre>
+<p>Then open your browser and go to: <strong>http://127.0.0.1:5000</strong></p>
+<h3 id="about-the-first-run">About the First Run</h3>
+<blockquote>
+<p><strong>⚠️ The very first time you run the app, it will automatically download a face recognition model. This file is about 580 MB. This is completely normal and happens only once. Do NOT close the terminal while it downloads. After the first run, the app will start much faster.</strong></p>
+</blockquote>
+<h3 id="stopping-the-application">Stopping the Application</h3>
+<ul>
+<li>Go to the terminal/command window and press <strong>Ctrl+C</strong></li>
+<li>Or simply close the terminal window</li>
+</ul>
+<hr>
+<h2 id="6-first-time-usage">6. First Time Usage</h2>
+<h3 id="step-61--create-an-admin-account">Step 6.1 — Create an Admin Account</h3>
+<ol>
+<li>Open your browser and go to: <strong>http://127.0.0.1:5000/signup</strong></li>
+<li>Fill in the form:
+<ul>
+<li><strong>Name:</strong> Your full name</li>
+<li><strong>Email:</strong> Your email address</li>
+<li><strong>Password:</strong> Choose a strong password</li>
+<li><strong>Role:</strong> Select <strong>admin</strong></li>
+</ul>
+</li>
+<li>Click <strong>Sign Up</strong></li>
+</ol>
+<h3 id="step-62--login">Step 6.2 — Login</h3>
+<ol>
+<li>Go to: <strong>http://127.0.0.1:5000/login</strong></li>
+<li>Enter the email and password you just created</li>
+<li>Click <strong>Login</strong></li>
+<li>You'll see the <strong>Admin Dashboard</strong></li>
+</ol>
+<h3 id="step-63--register-students">Step 6.3 — Register Students</h3>
+<ol>
+<li>From the Admin Dashboard, click <strong>&quot;Register Student&quot;</strong></li>
+<li>Enter the student's <strong>name</strong> and <strong>email</strong></li>
+<li>Your webcam will turn on — look at the camera</li>
+<li>Capture <strong>3 to 5 photos</strong> of the student's face from different angles</li>
+<li>Click <strong>Register</strong></li>
+<li>Repeat for every student you want to enroll</li>
+</ol>
+<h3 id="step-64--generate-face-embeddings">Step 6.4 — Generate Face Embeddings</h3>
+<p>After registering students through the web portal, embeddings are processed automatically. If you need to regenerate them manually (e.g., after adding photos directly to the <code>dataset/</code> folder):</p>
+<pre class="hljs"><code><div>cd <span class="hljs-string">"<span class="hljs-variable">$env:USERPROFILE</span>\Desktop\College_Automated_Attendance-master\College_Automated_Attendance-master"</span>
+C:\av\Scripts\python.exe gen_embed.py
+</div></code></pre>
+<h3 id="step-65--create-a-college-staff-account-optional">Step 6.5 — Create a College Staff Account (Optional)</h3>
+<ol>
+<li>Go to <strong>http://127.0.0.1:5000/signup</strong></li>
+<li>Create another account with role set to <strong>college</strong></li>
+<li>College staff can mark attendance but cannot manage students</li>
+</ol>
+<h3 id="step-66--mark-attendance">Step 6.6 — Mark Attendance</h3>
+<ol>
+<li>Login as <strong>college</strong> staff (or admin)</li>
+<li>Click <strong>&quot;Mark Attendance&quot;</strong></li>
+<li>Select the subject from the dropdown</li>
+<li>Point your webcam at the classroom</li>
+<li>Capture a photo — the system will automatically detect and identify all visible faces</li>
+<li>Attendance is marked for recognized students</li>
+</ol>
+<h3 id="step-67--view-records">Step 6.7 — View Records</h3>
+<ol>
+<li>Click <strong>&quot;Records&quot;</strong> in the navigation</li>
+<li>View attendance records filtered by date</li>
+<li>Admins can also generate and email reports from the dashboard</li>
+</ol>
+<hr>
+<h2 id="7-gmail-app-password-setup">7. Gmail App Password Setup</h2>
+<blockquote>
+<p><strong>This is needed if you want the system to send attendance reports via email. If you don't need email reports, you can skip this entire section.</strong></p>
+</blockquote>
+<h3 id="step-71--enable-2-step-verification-on-your-google-account">Step 7.1 — Enable 2-Step Verification on Your Google Account</h3>
+<ol>
+<li>Open your browser and go to: <strong>https://myaccount.google.com/security</strong></li>
+<li>Sign in with your Gmail account</li>
+<li>Scroll down to find <strong>&quot;2-Step Verification&quot;</strong> (under &quot;How you sign in to Google&quot;)</li>
+<li>Click on it</li>
+<li>Click <strong>&quot;Get started&quot;</strong></li>
+<li>Follow the instructions (you'll need your phone to receive a code)</li>
+<li>Complete the setup</li>
+</ol>
+<h3 id="step-72--generate-an-app-password">Step 7.2 — Generate an App Password</h3>
+<ol>
+<li>Go to: <strong>https://myaccount.google.com/apppasswords</strong></li>
+<li>Sign in if asked</li>
+<li>In the <strong>&quot;App name&quot;</strong> field, type: <code>Attendance System</code></li>
+<li>Click <strong>&quot;Create&quot;</strong></li>
+<li>Google will show you a <strong>16-character password</strong> like: <code>abcd efgh ijkl mnop</code></li>
+<li><strong>Copy this password immediately</strong> — you will need it for config.py</li>
+<li>Click <strong>&quot;Done&quot;</strong></li>
+</ol>
+<blockquote>
+<p><strong>⚠️ You will only see this password ONCE.</strong> If you lose it, you'll need to generate a new one.</p>
+</blockquote>
+<h3 id="step-73--put-the-app-password-in-configpy">Step 7.3 — Put the App Password in config.py</h3>
+<p>Open <code>config.py</code> and update the EMAIL_CONFIG section:</p>
+<pre class="hljs"><code><div>EMAIL_CONFIG = {
+    <span class="hljs-string">"sender_email"</span>: <span class="hljs-string">"your_real_email@gmail.com"</span>,
+    <span class="hljs-string">"sender_password"</span>: <span class="hljs-string">"abcd efgh ijkl mnop"</span>
+}
+</div></code></pre>
+<p>Replace <code>abcd efgh ijkl mnop</code> with the 16-character password Google gave you.</p>
+<hr>
+<h2 id="8-troubleshooting">8. Troubleshooting</h2>
+<h3 id="%22python-is-not-recognized-as-an-internal-or-external-command%22">&quot;python is not recognized as an internal or external command&quot;</h3>
+<p><strong>Cause:</strong> Python is not in your system PATH.
+<strong>Fix:</strong> Uninstall Python, reinstall it, and make sure to <strong>check &quot;Add python.exe to PATH&quot;</strong> during installation.</p>
+<h3 id="%22psql-is-not-recognized-as-an-internal-or-external-command%22">&quot;psql is not recognized as an internal or external command&quot;</h3>
+<p><strong>Cause:</strong> PostgreSQL bin folder is not in your PATH.
+<strong>Fix:</strong> Add <code>C:\Program Files\PostgreSQL\17\bin</code> to your system PATH (see Step 4.2). Change <code>17</code> to your PostgreSQL version number.</p>
+<h3 id="%22pip-install%22-fails-with-red-error-text-about-%22microsoft-visual-c-140%22">&quot;pip install&quot; fails with red error text about &quot;Microsoft Visual C++ 14.0&quot;</h3>
+<p><strong>Cause:</strong> Visual Studio Build Tools not installed.
+<strong>Fix:</strong> Install Visual Studio Build Tools with &quot;Desktop development with C++&quot; workload (Step 4.3).</p>
+<h3 id="%22fatal-password-authentication-failed-for-user-postgres%22">&quot;FATAL: password authentication failed for user postgres&quot;</h3>
+<p><strong>Cause:</strong> Wrong password in config.py.
+<strong>Fix:</strong> Make sure the password in <code>config.py</code> matches the one you set during PostgreSQL installation.</p>
+<h3 id="%22connection-refused%22-or-%22could-not-connect-to-server%22">&quot;connection refused&quot; or &quot;could not connect to server&quot;</h3>
+<p><strong>Cause:</strong> PostgreSQL service is not running.
+<strong>Fix:</strong></p>
+<ol>
+<li>Press <strong>Win+R</strong>, type <code>services.msc</code>, press Enter</li>
+<li>Find <strong>&quot;postgresql-x64-17&quot;</strong> (or similar) in the list</li>
+<li>Right-click → <strong>Start</strong></li>
+</ol>
+<h3 id="%22modulenotfounderror-no-module-named-%22">&quot;ModuleNotFoundError: No module named '...'&quot;</h3>
+<p><strong>Cause:</strong> You're running Python without the virtual environment.
+<strong>Fix:</strong> Always use <code>C:\av\Scripts\python.exe</code> instead of just <code>python</code>.</p>
+<h3 id="%22address-already-in-use%22-when-starting-the-app">&quot;Address already in use&quot; when starting the app</h3>
+<p><strong>Cause:</strong> The app is already running in another terminal.
+<strong>Fix:</strong> Close all other terminal windows, then try again.</p>
+<h3 id="%22no-face-detected%22-when-registering-a-student">&quot;No face detected&quot; when registering a student</h3>
+<p><strong>Cause:</strong> Poor lighting or camera angle.
+<strong>Fix:</strong> Make sure the student's face is clearly visible, well-lit, and directly facing the camera. Remove glasses or hats if needed.</p>
+<h3 id="first-run-is-very-slow-takes-several-minutes-to-start">First run is very slow (takes several minutes to start)</h3>
+<p><strong>Cause:</strong> Normal behavior — the app downloads a 580 MB face recognition model.
+<strong>Fix:</strong> Wait for it to finish. This only happens once.</p>
+<h3 id="windows-firewall-popup-appears">Windows Firewall popup appears</h3>
+<p><strong>Cause:</strong> The web server needs network access.
+<strong>Fix:</strong> Click <strong>&quot;Allow access&quot;</strong> — this only allows connections on your local machine.</p>
+<h3 id="%22cannot-execute-scripts%22-or-%22execution-policy%22-error">&quot;cannot execute scripts&quot; or &quot;execution policy&quot; error</h3>
+<p><strong>Fix:</strong> Run this in PowerShell:</p>
+<pre class="hljs"><code><div><span class="hljs-built_in">Set-ExecutionPolicy</span> RemoteSigned <span class="hljs-literal">-Scope</span> CurrentUser <span class="hljs-literal">-Force</span>
+</div></code></pre>
+<h3 id="virtual-environment-not-working">Virtual environment not working</h3>
+<p><strong>Fix:</strong> Delete and recreate it:</p>
+<pre class="hljs"><code><div><span class="hljs-built_in">Remove-Item</span> <span class="hljs-literal">-Recurse</span> <span class="hljs-literal">-Force</span> C:\av
+python <span class="hljs-literal">-m</span> venv C:\av
+C:\av\Scripts\Activate.ps1
+pip install <span class="hljs-literal">-r</span> requirements_py313.txt
+</div></code></pre>
+<hr>
+<h2 id="quick-reference">Quick Reference</h2>
+<table>
+<thead>
+<tr>
+<th>What</th>
+<th>How</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Start the app</strong></td>
+<td>Double-click <code>START_APP.bat</code> or run <code>C:\av\Scripts\python.exe app.py</code></td>
+</tr>
+<tr>
+<td><strong>Open in browser</strong></td>
+<td>http://127.0.0.1:5000</td>
+</tr>
+<tr>
+<td><strong>Sign up page</strong></td>
+<td>http://127.0.0.1:5000/signup</td>
+</tr>
+<tr>
+<td><strong>Login page</strong></td>
+<td>http://127.0.0.1:5000/login</td>
+</tr>
+<tr>
+<td><strong>Regenerate embeddings</strong></td>
+<td><code>C:\av\Scripts\python.exe gen_embed.py</code></td>
+</tr>
+<tr>
+<td><strong>Run scheduled mode</strong></td>
+<td><code>C:\av\Scripts\python.exe Schedule.py</code></td>
+</tr>
+<tr>
+<td><strong>Stop the app</strong></td>
+<td>Press <code>Ctrl+C</code> in the terminal</td>
+</tr>
+<tr>
+<td><strong>Project folder</strong></td>
+<td>Desktop\College_Automated_Attendance-master</td>
+</tr>
+<tr>
+<td><strong>Virtual environment</strong></td>
+<td><code>C:\av</code></td>
+</tr>
+<tr>
+<td><strong>Database</strong></td>
+<td>PostgreSQL → database <code>autoattendance</code> → port <code>5432</code></td>
+</tr>
+<tr>
+<td><strong>Config file</strong></td>
+<td><code>config.py</code> (database password, email settings)</td>
+</tr>
+</tbody>
+</table>
+
+</body>
+</html>

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}College Dashboard – AttendanceAI{% endblock %}
+{% block page_title %}College Dashboard{% endblock %}
+{% block content %}
+
+<div class="row g-4 mb-4">
+  <div class="col-md-4">
+    <div class="stat-card" style="background:linear-gradient(135deg,#0d6efd,#4dabf7)">
+      <div class="fs-1 fw-bold">{{ today_count }}</div>
+      <div class="opacity-75 small">Today's Attendance</div>
+      <i class="bi bi-check2-circle bg-icon"></i>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card" style="background:linear-gradient(135deg,#198754,#20c997)">
+      <div class="fs-1 fw-bold">{{ total_students }}</div>
+      <div class="opacity-75 small">Total Students</div>
+      <i class="bi bi-people-fill bg-icon"></i>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card" style="background:linear-gradient(135deg,#6f42c1,#a855f7)">
+      <div class="fs-1 fw-bold">{{ class_count }}</div>
+      <div class="opacity-75 small">Classes</div>
+      <i class="bi bi-building bg-icon"></i>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card p-4">
+      <h6 class="fw-bold mb-3">Quick Actions</h6>
+      <a href="{{ url_for('mark_attendance') }}" class="btn btn-primary w-100 mb-2">
+        <i class="bi bi-camera me-2"></i>Mark Attendance Now
+      </a>
+      <a href="{{ url_for('attendance_records') }}" class="btn btn-outline-secondary w-100">
+        <i class="bi bi-table me-2"></i>View Attendance Records
+      </a>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card p-4">
+      <h6 class="fw-bold mb-3"><i class="bi bi-info-circle me-2 text-primary"></i>System Info</h6>
+      <div class="d-flex justify-content-between py-2 border-bottom small">
+        <span class="text-muted">Face Recognition</span>
+        <span class="badge bg-success">Active</span>
+      </div>
+      <div class="d-flex justify-content-between py-2 border-bottom small">
+        <span class="text-muted">Date</span>
+        <span class="fw-semibold">{{ now.strftime('%B %d, %Y') }}</span>
+      </div>
+      <div class="d-flex justify-content-between py-2 small">
+        <span class="text-muted">Day</span>
+        <span class="fw-semibold">{{ now.strftime('%A') }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

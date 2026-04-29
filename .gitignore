@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env
+*.egg-info/
+dist/
+build/
+images/*.jpg
+images/*.png
+*.csv
+!embeddings.csv

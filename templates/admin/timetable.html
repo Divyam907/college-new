@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Timetable – {{ class_name }} {{ section_name }} – AttendanceAI{% endblock %}
+{% block page_title %}Timetable – {{ class_name }} ({{ section_name }}){% endblock %}
+{% block content %}
+
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb small">
+    <li class="breadcrumb-item"><a href="{{ url_for('admin_classes') }}">Classes</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('admin_sections', class_id=class_id) }}">{{ class_name }}</a></li>
+    <li class="breadcrumb-item active">Section {{ section_name }}</li>
+  </ol>
+</nav>
+
+<!-- Add Period Form -->
+<div class="card mb-4">
+  <div class="card-body p-4">
+    <h6 class="fw-bold mb-3"><i class="bi bi-plus-circle me-2 text-primary"></i>Add Period / Recess</h6>
+    <form method="POST" action="{{ url_for('admin_add_period', section_id=section_id) }}">
+      <div class="row g-3">
+        <div class="col-md-2">
+          <label class="form-label small fw-semibold">Day</label>
+          <select name="day_of_week" class="form-select form-select-sm">
+            {% for i in range(7) %}
+            <option value="{{ i }}">{{ days[i] }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small fw-semibold">Period Name</label>
+          <input type="text" name="period_name" class="form-control form-control-sm" placeholder="e.g. Mathematics, Lunch Break" required>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small fw-semibold">Teacher</label>
+          <input type="text" name="teacher_name" class="form-control form-control-sm" placeholder="e.g. Mr. Sharma">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small fw-semibold">From</label>
+          <input type="time" name="from_time" class="form-control form-control-sm" required>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small fw-semibold">To</label>
+          <input type="time" name="to_time" class="form-control form-control-sm" required>
+        </div>
+        <div class="col-md-1 d-flex align-items-end">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="is_recess" id="is_recess">
+            <label class="form-check-label small" for="is_recess">Recess</label>
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary mt-3">
+        <i class="bi bi-plus me-1"></i>Add Period
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Timetable Display -->
+{% for day_idx in range(6) %}
+{% if timetable[day_idx] %}
+<div class="card mb-3">
+  <div class="card-header bg-white py-2 px-4 border-bottom">
+    <span class="fw-bold">{{ days[day_idx] }}</span>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-sm table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th class="px-4">Time</th>
+          <th>Period</th>
+          <th>Teacher</th>
+          <th>Type</th>
+          <th class="text-end px-4">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in timetable[day_idx] %}
+        <tr class="{% if p[6] %}table-warning{% endif %}">
+          <td class="px-4 small">{{ p[4]|string|truncate(5, True, '') }} – {{ p[5]|string|truncate(5, True, '') }}</td>
+          <td class="fw-semibold">{{ p[2] }}</td>
+          <td class="text-muted small">{{ p[3] or '—' }}</td>
+          <td>
+            {% if p[6] %}
+            <span class="badge bg-warning text-dark">Recess</span>
+            {% else %}
+            <span class="badge bg-primary">Class</span>
+            {% endif %}
+          </td>
+          <td class="text-end px-4">
+            <form method="POST" action="{{ url_for('admin_delete_period', tt_id=p[0]) }}" class="d-inline">
+              <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endfor %}
+
+{% set has_any = namespace(val=false) %}
+{% for day_idx in range(7) %}
+  {% if timetable[day_idx] %}{% set has_any.val = true %}{% endif %}
+{% endfor %}
+{% if not has_any.val %}
+<div class="card">
+  <div class="card-body text-center py-5 text-muted">
+    <i class="bi bi-calendar-x fs-1 d-block mb-2"></i>
+    No periods scheduled yet. Use the form above to add periods.
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}WhatsApp Alerts – AttendanceAI{% endblock %}
+{% block page_title %}WhatsApp Notifications{% endblock %}
+{% block content %}
+
+<!-- Connection Status -->
+<div class="card mb-4">
+  <div class="card-body p-4 d-flex align-items-center justify-content-between">
+    <div>
+      <h6 class="fw-bold mb-1"><i class="bi bi-whatsapp me-2 text-success"></i>WhatsApp Integration (Twilio)</h6>
+      <span class="small text-muted">Send absence alerts, daily summaries, and engagement warnings.</span>
+    </div>
+    <span class="badge {% if whatsapp_configured %}bg-success{% else %}bg-danger{% endif %} fs-6">
+      {% if whatsapp_configured %}
+      <i class="bi bi-check-circle me-1"></i>Connected
+      {% else %}
+      <i class="bi bi-x-circle me-1"></i>Not Configured
+      {% endif %}
+    </span>
+  </div>
+  {% if not whatsapp_configured %}
+  <div class="card-footer bg-warning bg-opacity-10 small px-4">
+    <i class="bi bi-info-circle me-1"></i>
+    Set <code>TWILIO_CONFIG</code> in <code>config.py</code> with your Account SID, Auth Token, and WhatsApp number.
+    <a href="https://console.twilio.com/us1/develop/sms/try-it-out/whatsapp-learn" target="_blank">Get sandbox credentials →</a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Quick Actions -->
+<div class="row g-3 mb-4">
+  <div class="col-md-6">
+    <div class="card p-3">
+      <h6 class="fw-bold small mb-2"><i class="bi bi-send me-2 text-primary"></i>Test Message</h6>
+      <form method="POST" action="{{ url_for('admin_test_whatsapp') }}" class="d-flex gap-2">
+        <input type="text" name="phone" class="form-control form-control-sm" placeholder="+919876543210" required>
+        <button type="submit" class="btn btn-sm btn-outline-primary px-3" {% if not whatsapp_configured %}disabled{% endif %}>Test</button>
+      </form>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card p-3">
+      <h6 class="fw-bold small mb-2"><i class="bi bi-bar-chart me-2 text-success"></i>Manual Summary</h6>
+      <form method="POST" action="{{ url_for('admin_send_whatsapp_summary') }}">
+        <button type="submit" class="btn btn-sm btn-success w-100" {% if not whatsapp_configured %}disabled{% endif %}>
+          <i class="bi bi-send me-1"></i>Send Today's Summary to All
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Add Recipient -->
+<div class="card mb-4">
+  <div class="card-body p-4">
+    <h6 class="fw-bold mb-3"><i class="bi bi-person-plus me-2 text-primary"></i>Add Recipient</h6>
+    <form method="POST" action="{{ url_for('admin_add_whatsapp_recipient') }}">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label small fw-semibold">Name</label>
+          <input type="text" name="name" class="form-control form-control-sm" placeholder="Mr. Sharma" required>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small fw-semibold">Phone</label>
+          <input type="text" name="phone" class="form-control form-control-sm" placeholder="+919876543210" required>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small fw-semibold">Role</label>
+          <select name="role" class="form-select form-select-sm" required>
+            <option value="">Select</option>
+            <option value="parent">Parent</option>
+            <option value="teacher">Teacher</option>
+            <option value="hod">HOD</option>
+            <option value="dean">Dean</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small fw-semibold">Linked Student (for parents)</label>
+          <select name="student_id" class="form-select form-select-sm">
+            <option value="">None (general)</option>
+            {% for s in students %}
+            <option value="{{ s[0] }}">{{ s[1] }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <button type="submit" class="btn btn-primary btn-sm w-100">Add</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Recipients List -->
+<div class="card">
+  <div class="card-header bg-white py-3 px-4 border-bottom">
+    <span class="fw-semibold">{{ recipients|length }} Recipient(s)</span>
+  </div>
+  <div class="card-body p-0">
+    {% if recipients %}
+    <table class="table table-hover mb-0 small">
+      <thead class="table-light">
+        <tr>
+          <th class="px-4">Name</th>
+          <th>Phone</th>
+          <th>Role</th>
+          <th>Linked Student</th>
+          <th>Class</th>
+          <th class="text-end px-4">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in recipients %}
+        <tr>
+          <td class="px-4 fw-semibold">{{ r[1] }}</td>
+          <td class="text-muted">{{ r[2] }}</td>
+          <td>
+            <span class="badge {% if r[3]=='dean' %}bg-danger{% elif r[3]=='hod' %}bg-purple{% elif r[3]=='teacher' %}bg-primary{% else %}bg-success{% endif %}">
+              {{ r[3]|upper }}
+            </span>
+          </td>
+          <td>{{ r[6] or '—' }}</td>
+          <td>{{ r[7] or '—' }}</td>
+          <td class="text-end px-4">
+            <form method="POST" action="{{ url_for('admin_delete_whatsapp_recipient', rec_id=r[0]) }}" class="d-inline"
+                  onsubmit="return confirm('Remove this recipient?')">
+              <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="text-center py-5 text-muted">
+      <i class="bi bi-whatsapp fs-1 d-block mb-2 opacity-25"></i>
+      No recipients added yet. Add parents, teachers, HOD, or dean above.
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card mt-4 border-info">
+  <div class="card-body p-3 small">
+    <h6 class="fw-bold small text-info"><i class="bi bi-info-circle me-2"></i>How it works</h6>
+    <ul class="mb-0">
+      <li><strong>Parents:</strong> Get instant WhatsApp alert when their child is absent from a class.</li>
+      <li><strong>Teachers:</strong> Receive low engagement alerts and daily summaries.</li>
+      <li><strong>HOD/Dean:</strong> Get daily attendance summaries and critical alerts.</li>
+      <li>Messages are sent automatically after each attendance marking session.</li>
+    </ul>
+  </div>
+</div>
+
+{% endblock %}

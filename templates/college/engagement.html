@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+{% block title %}Engagement Monitoring – AttendanceAI{% endblock %}
+{% block page_title %}Engagement Monitoring{% endblock %}
+{% block content %}
+
+<!-- Start New Session -->
+<div class="card mb-4">
+  <div class="card-body p-4">
+    <h6 class="fw-bold mb-3"><i class="bi bi-play-circle me-2 text-primary"></i>Start Engagement Monitoring</h6>
+    <form method="POST" action="{{ url_for('college_engagement_start') }}" class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold">Class</label>
+        <select id="sel-class" class="form-select form-select-sm" onchange="loadSections(this.value)" required>
+          <option value="">Select Class</option>
+          {% for c in classes %}
+          <option value="{{ c[0] }}">{{ c[1] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold">Section</label>
+        <select id="sel-section" name="section_id" class="form-select form-select-sm" onchange="loadPeriods(this.value)" required>
+          <option value="">Select Section</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold">Period</label>
+        <select id="sel-period" name="period_id" class="form-select form-select-sm" required>
+          <option value="">Select Period</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small fw-semibold">Interval (sec)</label>
+        <select name="interval" class="form-select form-select-sm">
+          <option value="30">30s</option>
+          <option value="60" selected>1 min</option>
+          <option value="120">2 min</option>
+          <option value="300">5 min</option>
+        </select>
+      </div>
+      <div class="col-md-1">
+        <button type="submit" class="btn btn-primary btn-sm w-100">
+          <i class="bi bi-play-fill"></i> Start
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Active Sessions -->
+{% if active_sessions %}
+<div class="card mb-4">
+  <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center gap-2">
+    <i class="bi bi-broadcast text-success"></i>
+    <span class="fw-semibold">Active Monitoring Sessions</span>
+    <span class="badge bg-success ms-auto">{{ active_sessions|length }} active</span>
+  </div>
+  <div class="card-body p-3">
+    {% for s in active_sessions %}
+    <div class="border rounded p-3 mb-3 session-card" data-session-id="{{ s[0] }}">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div>
+          <span class="fw-semibold">{{ s[1] }}</span> &rarr;
+          <span class="text-muted">{{ s[2] }}</span> &rarr;
+          <span class="badge bg-primary">{{ s[3] }}</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-light text-dark small">Every {{ s[5] }}s</span>
+          <span class="badge bg-success blink-badge"><i class="bi bi-circle-fill me-1" style="font-size:8px"></i>LIVE</span>
+          <form method="POST" action="{{ url_for('college_engagement_stop') }}" class="d-inline">
+            <input type="hidden" name="session_id" value="{{ s[0] }}">
+            <button class="btn btn-outline-danger btn-sm"><i class="bi bi-stop-fill"></i> Stop</button>
+          </form>
+        </div>
+      </div>
+      <!-- Live camera + captured snapshot + results -->
+      <div class="row g-2">
+        <div class="col-md-4">
+          <label class="small text-muted d-block mb-1"><i class="bi bi-camera-video me-1"></i>Live Feed</label>
+          <video class="session-video w-100 rounded border" autoplay playsinline muted style="max-height:180px;background:#000;object-fit:cover"></video>
+        </div>
+        <div class="col-md-4">
+          <label class="small text-muted d-block mb-1"><i class="bi bi-image me-1"></i>Last Capture</label>
+          <img class="session-snapshot w-100 rounded border" style="max-height:180px;object-fit:cover;background:#f8f9fa" src="" alt="No capture yet">
+        </div>
+        <div class="col-md-4">
+          <label class="small text-muted d-block mb-1"><i class="bi bi-bar-chart me-1"></i>Analysis</label>
+          <div class="session-result p-2 h-100 d-flex align-items-center justify-content-center text-muted small border rounded">
+            <div class="text-center">
+              <i class="bi bi-hourglass-split fs-4 d-block mb-1 opacity-25"></i>
+              Waiting for first capture...
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Capture history timeline -->
+      <div class="session-history mt-2 small d-flex flex-wrap gap-1" style="max-height:60px;overflow-y:auto"></div>
+      <div class="text-muted small mt-2">
+        <i class="bi bi-clock me-1"></i>Started: {{ s[4].strftime('%d %b %Y %H:%M') }}
+        &nbsp;|&nbsp; Captures: <span class="capture-count">0</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Recent Engagement Logs (stored data) -->
+<div class="card">
+  <div class="card-header bg-white py-3 px-4 border-bottom">
+    <span class="fw-semibold"><i class="bi bi-clock-history me-2"></i>Recent Captures (Last 24h)</span>
+  </div>
+  <div class="card-body p-0">
+    {% if recent_logs %}
+    <div class="table-responsive">
+    <table class="table table-hover mb-0 small">
+      <thead class="table-light">
+        <tr>
+          <th class="px-4">Time</th>
+          <th>Class</th>
+          <th>Section</th>
+          <th>Period</th>
+          <th>Faces</th>
+          <th>Attentive</th>
+          <th>Confused</th>
+          <th>Distracted</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for l in recent_logs %}
+        <tr>
+          <td class="px-4">{{ l[0].strftime('%H:%M:%S') if l[0] else '—' }}</td>
+          <td>{{ l[1] or '—' }}</td>
+          <td>{{ l[2] or '—' }}</td>
+          <td>{{ l[3] or '—' }}</td>
+          <td><span class="badge bg-secondary">{{ l[4] }}</span></td>
+          <td><span class="badge bg-success">{{ l[5]|round(1) }}%</span></td>
+          <td><span class="badge bg-warning text-dark">{{ l[6]|round(1) }}%</span></td>
+          <td><span class="badge bg-danger">{{ l[7]|round(1) }}%</span></td>
+          <td>
+            {% set score = l[8] %}
+            <span class="badge {% if score >= 0.7 %}bg-success{% elif score >= 0.4 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+              {{ (score * 100)|round(0) }}%
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5 text-muted">
+      <i class="bi bi-bar-chart fs-1 d-block mb-2 opacity-25"></i>
+      No engagement captures yet. Start a monitoring session above.
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
+.blink-badge i { animation: blink 1.2s infinite; }
+.session-snapshot[src=""] { display:flex; align-items:center; justify-content:center; min-height:100px; }
+.session-snapshot[src=""]::after { content:'No capture yet'; color:#999; font-size:11px; }
+</style>
+
+<script>
+// ─── Dynamic dropdowns ───────────────────────────────────────────────────────
+async function loadSections(classId) {
+  const sel = document.getElementById('sel-section');
+  sel.innerHTML = '<option value="">Loading...</option>';
+  document.getElementById('sel-period').innerHTML = '<option value="">Select Period</option>';
+  if (!classId) { sel.innerHTML = '<option value="">Select Section</option>'; return; }
+  const resp = await fetch(`/api/sections/${classId}`);
+  const data = await resp.json();
+  sel.innerHTML = '<option value="">Select Section</option>';
+  data.forEach(s => { sel.innerHTML += `<option value="${s.id}">${s.name}</option>`; });
+}
+
+async function loadPeriods(sectionId) {
+  const sel = document.getElementById('sel-period');
+  sel.innerHTML = '<option value="">Loading...</option>';
+  if (!sectionId) { sel.innerHTML = '<option value="">Select Period</option>'; return; }
+  const resp = await fetch(`/api/timetable/${sectionId}`);
+  const data = await resp.json();
+  sel.innerHTML = '<option value="">Select Period</option>';
+  data.forEach(p => {
+    if (!p.is_recess) {
+      sel.innerHTML += `<option value="${p.id}">${p.name} (${p.time})</option>`;
+    }
+  });
+}
+
+// ─── Auto-capture for active sessions ────────────────────────────────────────
+let sessionStreams = {};
+let sessionTimers = {};
+
+async function initSessionCameras() {
+  const cards = document.querySelectorAll('.session-card');
+  if (cards.length === 0) return;
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { width:1280, height:720 } });
+    cards.forEach(card => {
+      const video = card.querySelector('.session-video');
+      video.srcObject = stream;
+      const sessionId = card.dataset.sessionId;
+      sessionStreams[sessionId] = { stream, video };
+
+      // Get interval from badge text
+      const intervalText = card.querySelector('.badge.bg-light').textContent;
+      const interval = parseInt(intervalText) * 1000 || 60000;
+
+      // Start periodic capture
+      captureAndAnalyze(sessionId, card);
+      sessionTimers[sessionId] = setInterval(() => captureAndAnalyze(sessionId, card), interval);
+    });
+  } catch(e) {
+    cards.forEach(card => {
+      card.querySelector('.session-result').innerHTML =
+        `<div class="alert alert-warning small mb-0"><i class="bi bi-exclamation-triangle me-1"></i>Camera access denied. Please allow camera access.</div>`;
+    });
+  }
+}
+
+async function captureAndAnalyze(sessionId, card) {
+  const info = sessionStreams[sessionId];
+  if (!info) return;
+
+  const video = info.video;
+  if (video.videoWidth === 0) return; // Not ready yet
+
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  const photo = canvas.toDataURL('image/jpeg', 0.8);
+
+  // Show the captured snapshot
+  const snapshotImg = card.querySelector('.session-snapshot');
+  snapshotImg.src = photo;
+
+  const resultDiv = card.querySelector('.session-result');
+  resultDiv.innerHTML = '<div class="text-center"><div class="spinner-border spinner-border-sm text-primary"></div><div class="small mt-1">Analyzing...</div></div>';
+
+  try {
+    const resp = await fetch('/college/engagement/capture', {
+      method: 'POST', credentials: 'same-origin',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ photo, session_id: sessionId })
+    });
+    const data = await resp.json();
+    if (data.error) {
+      resultDiv.innerHTML = `<div class="alert alert-danger small mb-0">${data.error}</div>`;
+      return;
+    }
+
+    // Show class-level stats only (per-student detail is admin-only)
+    const scoreClass = data.avg_score >= 0.7 ? 'success' : data.avg_score >= 0.4 ? 'warning' : 'danger';
+    const peopleCount = data.identified_count || 0;
+
+    resultDiv.innerHTML = `
+      <div class="w-100">
+        <div class="row g-1 text-center mb-2">
+          <div class="col-6"><div class="border rounded p-2"><div class="fw-bold fs-5 text-primary">${data.total_faces}</div><div style="font-size:10px" class="text-muted">Faces Detected</div></div></div>
+          <div class="col-6"><div class="border rounded p-2"><div class="fw-bold fs-5 text-info">${peopleCount}</div><div style="font-size:10px" class="text-muted">Identified</div></div></div>
+        </div>
+        <div class="row g-1 text-center mb-2">
+          <div class="col-4"><div class="border rounded p-1"><div class="fw-bold text-success">${data.attentive_pct.toFixed(0)}%</div><div style="font-size:9px" class="text-muted">Attentive</div></div></div>
+          <div class="col-4"><div class="border rounded p-1"><div class="fw-bold text-warning">${data.confused_pct.toFixed(0)}%</div><div style="font-size:9px" class="text-muted">Confused</div></div></div>
+          <div class="col-4"><div class="border rounded p-1"><div class="fw-bold text-danger">${data.distracted_pct.toFixed(0)}%</div><div style="font-size:9px" class="text-muted">Distracted</div></div></div>
+        </div>
+        <div class="progress" style="height:12px">
+          <div class="progress-bar bg-success" style="width:${data.attentive_pct}%"></div>
+          <div class="progress-bar bg-warning" style="width:${data.confused_pct}%"></div>
+          <div class="progress-bar bg-danger" style="width:${data.distracted_pct}%"></div>
+        </div>
+        <div class="text-center mt-2">
+          <span class="badge bg-${scoreClass} fs-6">${(data.avg_score*100).toFixed(0)}% Score</span>
+        </div>
+        <div class="text-muted mt-1 text-center" style="font-size:10px"><i class="bi bi-clock"></i> ${data.timestamp}</div>
+      </div>`;
+
+    // Update capture count
+    const countEl = card.querySelector('.capture-count');
+    countEl.textContent = parseInt(countEl.textContent) + 1;
+
+    // Append to history timeline
+    const histDiv = card.querySelector('.session-history');
+    histDiv.innerHTML = `<span class="badge bg-${scoreClass} me-1">${data.timestamp} – ${(data.avg_score*100).toFixed(0)}% (${data.total_faces} faces)</span>` + histDiv.innerHTML;
+
+  } catch(e) {
+    resultDiv.innerHTML = `<div class="alert alert-danger small mb-0">${e.message}</div>`;
+  }
+}
+
+// Start cameras on load
+window.addEventListener('load', initSessionCameras);
+
+// Cleanup on leave
+window.addEventListener('beforeunload', () => {
+  Object.values(sessionTimers).forEach(t => clearInterval(t));
+  Object.values(sessionStreams).forEach(s => {
+    if (s.stream) s.stream.getTracks().forEach(t => t.stop());
+  });
+});
+</script>
+{% endblock %}
