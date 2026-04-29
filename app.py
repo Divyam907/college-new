@@ -342,22 +342,78 @@ def inject_now():
     return {'now': dt.datetime.now()}
 
 
-def _save_b64_image(b64_str, path):
+def _save_b64_image(b64_str, path, max_size=320):
     if ',' in b64_str:
         b64_str = b64_str.split(',')[1]
     data  = base64.b64decode(b64_str)
     arr   = np.frombuffer(data, dtype=np.uint8)
     img   = cv2.imdecode(arr, cv2.IMREAD_COLOR)
-    cv2.imwrite(path, img)
+    # Resize to save memory — Facenet512 only needs 160x160 internally
+    h, w = img.shape[:2]
+    if max(h, w) > max_size:
+        scale = max_size / max(h, w)
+        img = cv2.resize(img, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
+    cv2.imwrite(path, img, [cv2.IMWRITE_JPEG_QUALITY, 85])
 
 
 def _regenerate_embeddings():
+    """Full regeneration — only used as fallback."""
+    import gc
     _load_ai_modules()
     embeddings, names = gen_embed.get_embeddings(DATASET_DIR)
     if embeddings:
         df = pd.DataFrame(embeddings)
         df['name'] = names
         df.to_csv(os.path.join(BASE_DIR, 'embeddings.csv'), index=False)
+    gc.collect()
+
+
+def _append_embeddings(student_name):
+    """Incremental: generate embeddings only for one student and append to CSV."""
+    import gc
+
+    student_dir = os.path.join(DATASET_DIR, student_name)
+    if not os.path.isdir(student_dir):
+        return
+
+    # Import only DeepFace — avoid loading the full AI stack
+    from deepface import DeepFace
+
+    csv_path = os.path.join(BASE_DIR, 'embeddings.csv')
+    # Load existing embeddings if any
+    if os.path.exists(csv_path):
+        existing_df = pd.read_csv(csv_path)
+    else:
+        existing_df = pd.DataFrame()
+
+    new_embeddings = []
+    new_names = []
+    for image_name in os.listdir(student_dir):
+        image_path = os.path.join(student_dir, image_name)
+        if not os.path.isfile(image_path):
+            continue
+        try:
+            embedding = DeepFace.represent(
+                img_path=image_path,
+                model_name='Facenet512',
+                detector_backend='opencv'
+            )[0]["embedding"]
+            new_embeddings.append(embedding)
+            new_names.append(student_name)
+        except Exception as e:
+            print(f"[embed] Could not process {image_path}: {e}", flush=True)
+        # Free memory after each image
+        gc.collect()
+
+    if new_embeddings:
+        new_df = pd.DataFrame(new_embeddings)
+        new_df['name'] = new_names
+        if not existing_df.empty:
+            combined_df = pd.concat([existing_df, new_df], ignore_index=True)
+        else:
+            combined_df = new_df
+        combined_df.to_csv(csv_path, index=False)
+    gc.collect()
 
 
 def _serialize(obj):
@@ -682,6 +738,9 @@ def admin_register_student():
             classes = cur.fetchall(); cur.close(); conn.close()
             return render_template('admin/register_student.html', classes=classes)
 
+        # Limit to 2 photos max to save memory on free tier
+        photos = photos[:2]
+
         try:
             cur.execute("""
                 INSERT INTO student (name, email, roll_no, class_id, section_id, dob)
@@ -703,18 +762,22 @@ def admin_register_student():
 
         cur.close(); conn.close()
 
+        import gc
         student_dir = os.path.join(DATASET_DIR, name)
         os.makedirs(student_dir, exist_ok=True)
         for i, b64 in enumerate(photos):
             _save_b64_image(b64, os.path.join(student_dir, f'photo_{i+1}.jpg'))
+            del b64
+        del photos
+        gc.collect()
 
         try:
-            _regenerate_embeddings()
+            _append_embeddings(name)
         except Exception as e:
             flash(f'Student saved but embeddings failed: {e}', 'warning')
             return redirect(url_for('admin_students'))
 
-        flash(f'Student "{name}" registered with {len(photos)} photo(s).', 'success')
+        flash(f'Student "{name}" registered successfully.', 'success')
         return redirect(url_for('admin_students'))
 
     # GET
@@ -738,10 +801,15 @@ def delete_student(std_id):
         d = os.path.join(DATASET_DIR, name)
         if os.path.exists(d):
             shutil.rmtree(d)
-        try:
-            _regenerate_embeddings()
-        except Exception:
-            pass
+        # Remove student's embeddings from CSV (no AI needed)
+        csv_path = os.path.join(BASE_DIR, 'embeddings.csv')
+        if os.path.exists(csv_path):
+            try:
+                df = pd.read_csv(csv_path)
+                df = df[df['name'] != name]
+                df.to_csv(csv_path, index=False)
+            except Exception:
+                pass
         flash(f'Student "{name}" deleted.', 'success')
     cur.close(); conn.close()
     return redirect(url_for('admin_students'))

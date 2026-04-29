@@ -58,9 +58,9 @@
 
         <div class="mb-3">
           <label class="form-label small fw-semibold">Captured Photos</label>
-          <div class="text-muted small mb-2">Capture 3–5 clear face photos from different angles.</div>
+          <div class="text-muted small mb-2">Capture 1–2 clear face photos from different angles.</div>
           <div id="photo-grid" class="d-flex flex-wrap gap-1 mb-2"></div>
-          <div id="photo-count" class="small text-muted">0 / 5 photos</div>
+          <div id="photo-count" class="small text-muted">0 / 2 photos</div>
         </div>
 
         <button type="button" id="submit-btn" class="btn btn-success w-100 fw-semibold">
@@ -95,12 +95,12 @@
 let stream = null;
 let facingMode = 'user';
 let capturedPhotos = [];
-const MAX = 5;
+const MAX = 2;
 
 async function startCamera() {
   try {
     if (stream) stream.getTracks().forEach(t => t.stop());
-    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode, width:1280, height:720 } });
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode, width:640, height:480 } });
     document.getElementById('camera-feed').srcObject = stream;
     document.getElementById('camera-error').classList.add('d-none');
   } catch(e) {
@@ -122,7 +122,7 @@ function capturePhoto() {
   canvas.width  = video.videoWidth;
   canvas.height = video.videoHeight;
   canvas.getContext('2d').drawImage(video, 0, 0);
-  const dataURL = canvas.toDataURL('image/jpeg', 0.85);
+  const dataURL = canvas.toDataURL('image/jpeg', 0.6);
   capturedPhotos.push(dataURL);
   renderGrid();
 }
