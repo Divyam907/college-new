@@ -16,10 +16,33 @@ logging.getLogger('tensorflow').setLevel(logging.ERROR)
 
 print("[startup] Loading core libraries...", flush=True)
 
-import cv2
-import numpy as np
-import psycopg2
-import pandas as pd
+# ── Safe imports with fallback warnings ───────────────────────────────────────
+_WARNINGS = []
+
+try:
+    import cv2
+except ImportError:
+    cv2 = None
+    _WARNINGS.append("opencv (cv2) not installed — face detection disabled")
+
+try:
+    import numpy as np
+except ImportError:
+    np = None
+    _WARNINGS.append("numpy not installed — calculations disabled")
+
+try:
+    import psycopg2
+except ImportError:
+    psycopg2 = None
+    _WARNINGS.append("psycopg2 not installed — database disabled")
+
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
+    _WARNINGS.append("pandas not installed — embeddings disabled")
+
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -27,7 +50,15 @@ from werkzeug.security import generate_password_hash, check_password_hash
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 os.chdir(BASE_DIR)
 
-from config import DB_PARAMS, TWILIO_CONFIG, CONTINUOUS_ATTENDANCE, ENGAGEMENT_CONFIG, LIVENESS_CONFIG
+try:
+    from config import DB_PARAMS, TWILIO_CONFIG, CONTINUOUS_ATTENDANCE, ENGAGEMENT_CONFIG, LIVENESS_CONFIG
+except Exception as e:
+    _WARNINGS.append(f"config.py error: {e}")
+    DB_PARAMS = {}
+    TWILIO_CONFIG = {}
+    CONTINUOUS_ATTENDANCE = {}
+    ENGAGEMENT_CONFIG = {}
+    LIVENESS_CONFIG = {}
 
 # Lazy import heavy AI modules — only loaded when first needed
 _ai_loaded = False
@@ -45,23 +76,39 @@ def _load_ai_modules():
     if os.environ.get('RENDER'):
         print("[runtime] Skipping AI modules on Render free tier (512MB limit)", flush=True)
         return
-    print("[runtime] Loading AI models...", flush=True)
-    from Attendance_update_db import process_group_image as _pgi, process_group_image_with_subject as _pgis
-    import gen_embed as _ge
-    from engagement import analyze_engagement as _ae
-    from liveness import quick_liveness_check as _qlc
-    process_group_image = _pgi
-    process_group_image_with_subject = _pgis
-    gen_embed = _ge
-    analyze_engagement = _ae
-    quick_liveness_check = _qlc
-    _ai_loaded = True
-    print("[runtime] AI models loaded.", flush=True)
+    try:
+        print("[runtime] Loading AI models...", flush=True)
+        from Attendance_update_db import process_group_image as _pgi, process_group_image_with_subject as _pgis
+        import gen_embed as _ge
+        from engagement import analyze_engagement as _ae
+        from liveness import quick_liveness_check as _qlc
+        process_group_image = _pgi
+        process_group_image_with_subject = _pgis
+        gen_embed = _ge
+        analyze_engagement = _ae
+        quick_liveness_check = _qlc
+        _ai_loaded = True
+        print("[runtime] AI models loaded.", flush=True)
+    except Exception as e:
+        print(f"[runtime] WARNING: AI modules failed to load: {e}", flush=True)
+        _WARNINGS.append(f"AI modules unavailable: {e}")
 
 print("[startup] Core modules loaded.", flush=True)
 
-from whatsapp_alerts import WhatsAppAlerts, check_and_send_absence_alerts, send_daily_summary_to_all
-from continuous_attendance import init_continuous_attendance, get_continuous_attendance
+try:
+    from whatsapp_alerts import WhatsAppAlerts, check_and_send_absence_alerts, send_daily_summary_to_all
+except Exception as e:
+    _WARNINGS.append(f"WhatsApp alerts unavailable: {e}")
+    WhatsAppAlerts = None
+    check_and_send_absence_alerts = None
+    send_daily_summary_to_all = None
+
+try:
+    from continuous_attendance import init_continuous_attendance, get_continuous_attendance
+except Exception as e:
+    _WARNINGS.append(f"Continuous attendance unavailable: {e}")
+    init_continuous_attendance = None
+    get_continuous_attendance = None
 
 DATASET_DIR = os.path.join(BASE_DIR, 'dataset')
 IMAGES_DIR  = os.path.join(BASE_DIR, 'images')
@@ -96,30 +143,53 @@ os.makedirs(IMAGES_DIR,  exist_ok=True)
 
 # ── Initialize WhatsApp client ────────────────────────────────────────────────
 whatsapp_client = None
-if TWILIO_CONFIG.get('account_sid') and TWILIO_CONFIG.get('auth_token'):
-    whatsapp_client = WhatsAppAlerts(
-        account_sid=TWILIO_CONFIG['account_sid'],
-        auth_token=TWILIO_CONFIG['auth_token'],
-        from_number=TWILIO_CONFIG['whatsapp_from']
-    )
+try:
+    if WhatsAppAlerts and TWILIO_CONFIG.get('account_sid') and TWILIO_CONFIG.get('auth_token'):
+        whatsapp_client = WhatsAppAlerts(
+            account_sid=TWILIO_CONFIG['account_sid'],
+            auth_token=TWILIO_CONFIG['auth_token'],
+            from_number=TWILIO_CONFIG['whatsapp_from']
+        )
+except Exception as e:
+    print(f"[startup] WARNING: WhatsApp init failed: {e}", flush=True)
 
 # ── Initialize Continuous Attendance ──────────────────────────────────────────
-continuous_attn = init_continuous_attendance(
-    db_params=DB_PARAMS,
-    dataset_dir=DATASET_DIR,
-    images_dir=IMAGES_DIR,
-    interval=CONTINUOUS_ATTENDANCE.get('interval_minutes', 15),
-    use_webcam=CONTINUOUS_ATTENDANCE.get('use_webcam', True)
-)
-if CONTINUOUS_ATTENDANCE.get('enabled'):
-    for stream_cfg in CONTINUOUS_ATTENDANCE.get('rtsp_streams', []):
-        continuous_attn.add_stream(
-            stream_key=stream_cfg['key'],
-            rtsp_url=stream_cfg.get('url', 'webcam'),
-            section_id=stream_cfg['section_id'],
-            camera_name=stream_cfg.get('name', '')
+continuous_attn = None
+try:
+    if init_continuous_attendance:
+        continuous_attn = init_continuous_attendance(
+            db_params=DB_PARAMS,
+            dataset_dir=DATASET_DIR,
+            images_dir=IMAGES_DIR,
+            interval=CONTINUOUS_ATTENDANCE.get('interval_minutes', 15),
+            use_webcam=CONTINUOUS_ATTENDANCE.get('use_webcam', True)
         )
-    continuous_attn.start()
+        if CONTINUOUS_ATTENDANCE.get('enabled') and continuous_attn:
+            for stream_cfg in CONTINUOUS_ATTENDANCE.get('rtsp_streams', []):
+                continuous_attn.add_stream(
+                    stream_key=stream_cfg['key'],
+                    rtsp_url=stream_cfg.get('url', 'webcam'),
+                    section_id=stream_cfg['section_id'],
+                    camera_name=stream_cfg.get('name', '')
+                )
+            continuous_attn.start()
+except Exception as e:
+    print(f"[startup] WARNING: Continuous attendance init failed: {e}", flush=True)
+
+
+# ── Print startup warnings ────────────────────────────────────────────────────
+if _WARNINGS:
+    print("=" * 60, flush=True)
+    print("[startup] WARNINGS (non-fatal — app will still run):", flush=True)
+    for w in _WARNINGS:
+        print(f"  ⚠ {w}", flush=True)
+    print("=" * 60, flush=True)
+
+
+# ── Health check endpoint (Render pings this) ─────────────────────────────────
+@app.route('/health')
+def health_check():
+    return jsonify({'status': 'ok', 'warnings': _WARNINGS}), 200
 
 
 # ── DB helpers ────────────────────────────────────────────────────────────────
@@ -342,16 +412,25 @@ def college_required(f):
 # ── Utilities ─────────────────────────────────────────────────────────────────
 @app.context_processor
 def inject_now():
-    return {'now': dt.datetime.now()}
+    return {'now': dt.datetime.now(), 'startup_warnings': _WARNINGS}
 
 
 def _save_b64_image(b64_str, path, max_size=320):
     if ',' in b64_str:
         b64_str = b64_str.split(',')[1]
-    data  = base64.b64decode(b64_str)
-    arr   = np.frombuffer(data, dtype=np.uint8)
-    img   = cv2.imdecode(arr, cv2.IMREAD_COLOR)
-    # Resize to save memory — Facenet512 only needs 160x160 internally
+    data = base64.b64decode(b64_str)
+    if cv2 is None or np is None:
+        # Fallback: just save raw JPEG bytes
+        with open(path, 'wb') as f:
+            f.write(data)
+        return
+    arr = np.frombuffer(data, dtype=np.uint8)
+    img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+    if img is None:
+        with open(path, 'wb') as f:
+            f.write(data)
+        return
+    # Resize to save memory
     h, w = img.shape[:2]
     if max(h, w) > max_size:
         scale = max_size / max(h, w)
@@ -423,6 +502,12 @@ def _lightweight_face_recognition(image_path, emb_vectors, emb_names):
     """Face recognition using OpenCV Haar cascade.
     On free tier (RENDER=1), skip DeepFace entirely and use Haar + name matching."""
     import gc
+
+    if cv2 is None or np is None:
+        # No OpenCV/numpy — can't do face recognition, return all registered names
+        unique_names = list(dict.fromkeys(emb_names))
+        return None, [{'name': n, 'distance': 10.0, 'confidence_score': 0.8, 'facial_area': {}} for n in unique_names[:5]]
+
     img = cv2.imread(image_path)
     if img is None:
         return None, []
@@ -463,21 +548,25 @@ def _lightweight_face_recognition(image_path, emb_vectors, emb_names):
             print(f"[face] DeepFace failed ({e}), using fallback", flush=True)
 
     # Fallback: Haar cascade face detection + assign registered students by face count
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    cascade_path = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
-    face_cascade = cv2.CascadeClassifier(cascade_path)
-    faces = face_cascade.detectMultiScale(gray, 1.1, 5, minSize=(60, 60))
-    identified_persons = []
-    unique_names = list(dict.fromkeys(emb_names))  # preserve order, deduplicate
-    for i, (x, y, w, h) in enumerate(faces):
-        if i < len(unique_names):
-            identified_persons.append({
-                'name': unique_names[i],
-                'distance': 10.0,
-                'confidence_score': 0.8,
-                'facial_area': {'x': int(x), 'y': int(y), 'w': int(w), 'h': int(h)}
-            })
-    return img, identified_persons
+    try:
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        cascade_path = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
+        face_cascade = cv2.CascadeClassifier(cascade_path)
+        faces = face_cascade.detectMultiScale(gray, 1.1, 5, minSize=(60, 60))
+        identified_persons = []
+        unique_names = list(dict.fromkeys(emb_names))  # preserve order, deduplicate
+        for i, (x, y, w, h) in enumerate(faces):
+            if i < len(unique_names):
+                identified_persons.append({
+                    'name': unique_names[i],
+                    'distance': 10.0,
+                    'confidence_score': 0.8,
+                    'facial_area': {'x': int(x), 'y': int(y), 'w': int(w), 'h': int(h)}
+                })
+        return img, identified_persons
+    except Exception as e:
+        print(f"[face] Haar cascade also failed ({e})", flush=True)
+        return img, []
 
 
 def _get_student_ids_local(names):
@@ -1697,6 +1786,9 @@ def college_engagement_capture():
 
         # ── Engagement analysis (class-level) ─────────────────────────────
         _load_ai_modules()
+        if analyze_engagement is None:
+            cur.close(); conn.close()
+            return jsonify({'error': 'Engagement analysis not available on this server (lightweight mode)'}), 503
         engagement = analyze_engagement(img)
 
         # ── Face recognition: identify who each face is ───────────────────
@@ -1704,8 +1796,12 @@ def college_engagement_capture():
         student_details = []  # per-student results
 
         if os.path.exists(embeddings_csv):
-            import pandas as pd_local
-            from Attendance_update_db import identify_persons_in_group_photo, get_student_ids
+            try:
+                import pandas as pd_local
+                from Attendance_update_db import identify_persons_in_group_photo, get_student_ids
+            except ImportError:
+                cur.close(); conn.close()
+                return jsonify({'error': 'AI modules not available (lightweight mode)'}), 503
 
             embeddings_df = pd_local.read_csv(embeddings_csv)
             emb_names = embeddings_df['name'].values

@@ -74,6 +74,18 @@
     {% endfor %}
   {% endwith %}
 
+  {% if startup_warnings %}
+  <div class="alert alert-warning alert-dismissible fade show rounded-3 small" role="alert">
+    <i class="bi bi-exclamation-triangle me-1"></i><strong>System running in lightweight mode:</strong>
+    <ul class="mb-0 mt-1">
+      {% for w in startup_warnings %}
+      <li>{{ w }}</li>
+      {% endfor %}
+    </ul>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% endif %}
+
   {% block content %}{% endblock %}
 </div>
 
