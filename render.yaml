@@ -10,7 +10,7 @@ services:
   - type: web
     name: college-attendance-api
     runtime: python
-    plan: free
+    plan: starter
     rootDir: backend
     buildCommand: ./build.sh
     startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --timeout 300 --workers 1 --preload
@@ -37,7 +37,7 @@ services:
   - type: web
     name: college-attendance-ui
     runtime: static
-    plan: free
+    plan: starter
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
