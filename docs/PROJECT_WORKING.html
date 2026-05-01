@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>PROJECT_WORKING.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="how-the-project-works--automated-attendance-system-using-facial-recognition">How the Project Works — Automated Attendance System Using Facial Recognition</h1>
+<p>This document explains the internal working of each component, the data flow between modules, and how the system processes attendance end to end.</p>
+<hr>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#high-level-architecture">High-Level Architecture</a></li>
+<li><a href="#authentication--role-system">Authentication &amp; Role System</a></li>
+<li><a href="#student-registration-admin-portal">Student Registration (Admin Portal)</a></li>
+<li><a href="#embedding-generation">Embedding Generation</a></li>
+<li><a href="#face-detection--recognition">Face Detection &amp; Recognition</a></li>
+<li><a href="#attendance-marking--portal-mode">Attendance Marking — Portal Mode</a></li>
+<li><a href="#attendance-marking--scheduled-batch-mode">Attendance Marking — Scheduled Batch Mode</a></li>
+<li><a href="#subject-association">Subject Association</a></li>
+<li><a href="#duplicate-prevention">Duplicate Prevention</a></li>
+<li><a href="#report-generation">Report Generation</a></li>
+<li><a href="#email-delivery">Email Delivery</a></li>
+<li><a href="#database-schema">Database Schema</a></li>
+<li><a href="#module-responsibilities">Module Responsibilities</a></li>
+<li><a href="#data-flow-diagrams">Data Flow Diagrams</a></li>
+</ol>
+<hr>
+<h2 id="high-level-architecture">High-Level Architecture</h2>
+<p>The system is a <strong>Flask web application</strong> backed by a <strong>PostgreSQL database</strong> and a <strong>DeepFace-based recognition engine</strong>. It operates in two modes:</p>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Entry Point</th>
+<th>How It Works</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Web Portal</strong></td>
+<td><code>app.py</code></td>
+<td>Users interact via browser — admin registers students, college staff marks attendance</td>
+</tr>
+<tr>
+<td><strong>Batch Scheduler</strong></td>
+<td><code>Schedule.py</code></td>
+<td>Reads images from the <code>images/</code> folder and processes them at scheduled times</td>
+</tr>
+</tbody>
+</table>
+<p>Both modes share the same recognition engine (<code>Attendance_update_db.py</code>), the same database, and the same embedding file (<code>embeddings.csv</code>).</p>
+<pre class="hljs"><code><div>Browser (Admin/College)
+        │
+        ▼
+   Flask (app.py)
+        │
+        ├──► Student Registration ──► dataset/ ──► gen_embed.py ──► embeddings.csv
+        │
+        ├──► Attendance Marking ──► Attendance_update_db.py
+        │       │                         │
+        │       ▼                         ▼
+        │   DeepFace + VGG-Face     PostgreSQL (attendance table)
+        │
+        └──► Report Sending ──► generate_report.py ──► send_report.py ──► send_email.py ──► Gmail SMTP
+</div></code></pre>
+<hr>
+<h2 id="authentication--role-system">Authentication &amp; Role System</h2>
+<h3 id="how-login-works">How Login Works</h3>
+<ol>
+<li>User opens <code>http://127.0.0.1:5000</code> → redirected to <code>/login</code></li>
+<li>Enters email and password</li>
+<li><code>app.py</code> queries the <code>users</code> table, retrieves the hashed password</li>
+<li><code>werkzeug.security.check_password_hash()</code> compares the entered password with the stored hash</li>
+<li>If valid → Flask session is set with <code>user_id</code>, <code>name</code>, <code>email</code>, <code>role</code></li>
+<li>User is redirected to <code>/admin</code> or <code>/college</code> based on role</li>
+</ol>
+<h3 id="how-signup-works">How Signup Works</h3>
+<ol>
+<li>User fills name, email, password, and selects role (<code>admin</code> or <code>college</code>)</li>
+<li>Password is hashed with <code>werkzeug.security.generate_password_hash()</code></li>
+<li>A new row is inserted into the <code>users</code> table</li>
+<li>User is redirected to login</li>
+</ol>
+<h3 id="role-enforcement">Role Enforcement</h3>
+<ul>
+<li><code>@admin_required</code> decorator: checks <code>session['role'] == 'admin'</code></li>
+<li><code>@college_required</code> decorator: checks <code>session['role'] == 'college'</code></li>
+<li>Unauthorized access redirects to the dashboard with an error flash message</li>
+</ul>
+<hr>
+<h2 id="student-registration-admin-portal">Student Registration (Admin Portal)</h2>
+<h3 id="step-by-step-flow">Step-by-Step Flow</h3>
+<pre class="hljs"><code><div>Admin clicks &quot;Register Student&quot;
+        │
+        ▼
+Browser opens webcam → admin captures 1+ photos
+        │
+        ▼
+Photos sent as base64 JSON to POST /admin/register
+        │
+        ▼
+app.py decodes base64 → saves as JPG files
+        │
+        ├──► INSERT INTO student (name, email) → PostgreSQL
+        │
+        ├──► Creates folder: dataset/&lt;Student Name&gt;/
+        │    Saves: photo_1.jpg, photo_2.jpg, ...
+        │
+        └──► Calls _regenerate_embeddings()
+             │
+             └──► gen_embed.get_embeddings() → reads all dataset/ folders
+                  → extracts VGG-Face embeddings → writes embeddings.csv
+</div></code></pre>
+<h3 id="key-details">Key Details</h3>
+<ul>
+<li>Each student gets a dedicated folder inside <code>dataset/</code> named after them</li>
+<li>The folder name <strong>must match</strong> the <code>name</code> column in the <code>student</code> table</li>
+<li><code>embeddings.csv</code> is regenerated after every registration so the new student is immediately recognizable</li>
+<li>Photos are decoded from base64, converted to NumPy arrays via OpenCV, and saved as <code>.jpg</code></li>
+</ul>
+<hr>
+<h2 id="embedding-generation">Embedding Generation</h2>
+<h3 id="what-are-embeddings">What Are Embeddings?</h3>
+<p>An embedding is a <strong>2622-dimensional numerical vector</strong> that represents a face's identity-related features. The VGG-Face model converts a face image into this vector. Two images of the same person produce similar vectors; different people produce distant vectors.</p>
+<h3 id="how-genembedpy-works">How <code>gen_embed.py</code> Works</h3>
+<pre class="hljs"><code><div><span class="hljs-keyword">for</span> each student folder <span class="hljs-keyword">in</span> dataset/:
+    <span class="hljs-keyword">for</span> each image <span class="hljs-keyword">in</span> the folder:
+        embedding = DeepFace.represent(image, model_name=<span class="hljs-string">'VGG-Face'</span>)
+        store embedding + student name
+save all embeddings to embeddings.csv
+</div></code></pre>
+<h3 id="output-format--embeddingscsv">Output Format — <code>embeddings.csv</code></h3>
+<table>
+<thead>
+<tr>
+<th>Column 0</th>
+<th>Column 1</th>
+<th>...</th>
+<th>Column 2621</th>
+<th>name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.0234</td>
+<td>-0.0891</td>
+<td>...</td>
+<td>0.1456</td>
+<td>John Doe</td>
+</tr>
+<tr>
+<td>0.0512</td>
+<td>-0.0234</td>
+<td>...</td>
+<td>0.0789</td>
+<td>Jane Smith</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>2622 numerical columns (VGG-Face embedding dimensions)</li>
+<li>1 <code>name</code> column (student identity label)</li>
+<li>One row per image (a student with 3 photos has 3 rows)</li>
+</ul>
+<hr>
+<h2 id="face-detection--recognition">Face Detection &amp; Recognition</h2>
+<h3 id="detection">Detection</h3>
+<p>The system uses <strong>MTCNN</strong> (Multi-Task Cascaded Convolutional Network) as the face detector:</p>
+<pre class="hljs"><code><div>faces = DeepFace.extract_faces(img_path=image_path, detector_backend=<span class="hljs-string">'mtcnn'</span>)
+</div></code></pre>
+<p>This returns a list of detected face regions with coordinates (<code>x</code>, <code>y</code>, <code>w</code>, <code>h</code>).</p>
+<h3 id="recognition-matching">Recognition (Matching)</h3>
+<p>For each detected face:</p>
+<ol>
+<li><strong>Crop</strong> the face region from the image</li>
+<li><strong>Extract embedding</strong> using VGG-Face:<pre class="hljs"><code><div>face_embedding = DeepFace.represent(face_img, model_name=<span class="hljs-string">'VGG-Face'</span>, enforce_detection=<span class="hljs-literal">False</span>)
+</div></code></pre>
+</li>
+<li><strong>Compare</strong> with all stored embeddings using Euclidean distance:<pre class="hljs"><code><div>distance = ||face_embedding - stored_embedding||₂
+</div></code></pre>
+</li>
+<li><strong>Select</strong> the stored identity with the smallest distance</li>
+<li><strong>Apply threshold</strong>: if <code>distance &gt; 0.9</code>, reject the match (face is unknown)</li>
+<li>If accepted, compute confidence: <code>confidence = 1 / (1 + distance)</code></li>
+</ol>
+<h3 id="why-threshold-matters">Why Threshold Matters</h3>
+<p>Without a threshold, every detected face would be force-matched to the nearest known student — even if the face belongs to a visitor or is a false detection. The threshold of <code>0.9</code> prevents weak matches from being recorded.</p>
+<hr>
+<h2 id="attendance-marking--portal-mode">Attendance Marking — Portal Mode</h2>
+<h3 id="user-flow">User Flow</h3>
+<ol>
+<li>College staff logs in → opens <strong>Mark Attendance</strong> page</li>
+<li>Selects a <strong>subject</strong> from the dropdown (fetched from <code>subject</code> table)</li>
+<li>Captures a <strong>classroom photo</strong> via webcam (browser camera)</li>
+<li>Browser sends the base64 image + <code>subject_id</code> as JSON to <code>POST /college/mark</code></li>
+</ol>
+<h3 id="backend-processing">Backend Processing</h3>
+<pre class="hljs"><code><div>POST /college/mark
+        │
+        ▼
+Decode base64 → save as images/HH-MM-SS.jpg
+        │
+        ▼
+process_group_image_with_subject(image_path, subject_id)
+        │
+        ├──► Load embeddings.csv
+        │
+        ├──► DeepFace.extract_faces() → detect all faces
+        │
+        ├──► For each face:
+        │       DeepFace.represent() → get embedding
+        │       Compare with all stored embeddings
+        │       If distance &lt; 0.9 → accept match
+        │
+        ├──► get_student_ids(matched_names) → look up std_ids from DB
+        │
+        ├──► mark_attendance(student_ids, subject_id, date, image_path)
+        │       │
+        │       └──► For each student:
+        │               Check if attendance already exists for (date, subject, student)
+        │               If not → INSERT INTO attendance
+        │
+        └──► Return JSON result to browser
+                {recognized students, confidence scores, subject info}
+</div></code></pre>
+<h3 id="response-to-browser">Response to Browser</h3>
+<p>The browser displays:</p>
+<ul>
+<li>Names of recognized students</li>
+<li>Confidence scores</li>
+<li>Number of faces detected vs matched</li>
+<li>Any errors (e.g., no faces found)</li>
+</ul>
+<hr>
+<h2 id="attendance-marking--scheduled-batch-mode">Attendance Marking — Scheduled Batch Mode</h2>
+<h3 id="how-it-works">How It Works</h3>
+<p><code>Schedule.py</code> runs as a long-lived process that checks the <code>images/</code> folder.</p>
+<pre class="hljs"><code><div>Schedule.py starts
+        │
+        ├──► Runs job() immediately on startup
+        │
+        └──► Runs job() at configured times (e.g., 19:24, 19:25)
+                │
+                ▼
+        For each file in images/ matching HH-MM-SS.ext:
+                │
+                ├──► process_group_image(image_path)
+                │       │
+                │       ├──► Extract time from filename (e.g., 09-30-00 → 09:30:00)
+                │       ├──► Query subject table: which subject runs at this time?
+                │       ├──► Detect faces → match embeddings → mark attendance
+                │       └──► Return result
+                │
+                └──► send_daily_report(image_path) → email the report
+</div></code></pre>
+<h3 id="automatic-report-triggers">Automatic Report Triggers</h3>
+<ul>
+<li><strong>Every run</strong>: sends daily report</li>
+<li><strong>Sunday</strong> (<code>weekday == 6</code>): sends weekly report</li>
+<li><strong>5th of month</strong> (<code>day == 5</code>): sends monthly report</li>
+</ul>
+<hr>
+<h2 id="subject-association">Subject Association</h2>
+<p>The system supports <strong>two methods</strong> for linking attendance to a subject:</p>
+<h3 id="method-1--time-based-batch-mode">Method 1 — Time-Based (Batch Mode)</h3>
+<ul>
+<li>Image filename encodes the time: <code>09-30-00.jpg</code> → 09:30:00</li>
+<li>The system queries the <code>subject</code> table:<pre class="hljs"><code><div><span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> subject <span class="hljs-keyword">WHERE</span> <span class="hljs-string">'09:30:00'</span> <span class="hljs-keyword">BETWEEN</span> from_time <span class="hljs-keyword">AND</span> to_time
+</div></code></pre>
+</li>
+<li>If a match is found, that subject is used</li>
+<li>If no match → error (no subject at this time)</li>
+</ul>
+<h3 id="method-2--manual-selection-portal-mode">Method 2 — Manual Selection (Portal Mode)</h3>
+<ul>
+<li>College staff selects the subject from a dropdown before capturing the photo</li>
+<li>The selected <code>subject_id</code> is passed directly to <code>process_group_image_with_subject()</code></li>
+<li>This avoids the time-based lookup entirely</li>
+</ul>
+<p><strong>Why both?</strong> Time-based works for automated processing during class hours. Manual selection works for testing, demos, or capturing attendance outside the fixed schedule.</p>
+<hr>
+<h2 id="duplicate-prevention">Duplicate Prevention</h2>
+<p>Before inserting an attendance record, the system checks:</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">SELECT</span> <span class="hljs-number">1</span> <span class="hljs-keyword">FROM</span> attendance
+<span class="hljs-keyword">WHERE</span> <span class="hljs-built_in">date</span> = %s <span class="hljs-keyword">AND</span> subject_id = %s <span class="hljs-keyword">AND</span> student_id = %s
+</div></code></pre>
+<p>If a row already exists → skip insertion. This prevents:</p>
+<ul>
+<li>Double-marking when the same image is processed again</li>
+<li>Inflation of attendance counts in reports</li>
+</ul>
+<hr>
+<h2 id="report-generation">Report Generation</h2>
+<h3 id="daily-report-generatedailyreportdate">Daily Report (<code>generate_daily_report(date)</code>)</h3>
+<ul>
+<li>Queries all attendance records for a specific date</li>
+<li>Pivots data: rows = students, columns = subjects</li>
+<li>Output: which students attended which subjects on that date</li>
+</ul>
+<h3 id="weekly-report-generateweeklyreportstartdate-enddate">Weekly Report (<code>generate_weekly_report(start_date, end_date)</code>)</h3>
+<ul>
+<li>Queries attendance between two dates</li>
+<li>Groups by student + subject</li>
+<li>Counts number of days present per student per subject</li>
+</ul>
+<h3 id="monthly-report-generatemonthlyreportyear-month">Monthly Report (<code>generate_monthly_report(year, month)</code>)</h3>
+<ul>
+<li>Queries attendance for a given month</li>
+<li>Calculates per student per subject:
+<ul>
+<li>Total classes (assumed 20 per subject)</li>
+<li>Days present</li>
+<li>Days absent</li>
+<li>Attendance percentage</li>
+</ul>
+</li>
+</ul>
+<h3 id="output-format">Output Format</h3>
+<p>All reports are exported as <strong>Excel (.xlsx)</strong> files using <code>pandas</code> + <code>openpyxl</code>.</p>
+<hr>
+<h2 id="email-delivery">Email Delivery</h2>
+<h3 id="how-emails-are-sent">How Emails Are Sent</h3>
+<pre class="hljs"><code><div>send_report.py
+    │
+    ├──► generate_report.py → creates the report DataFrame
+    │
+    ├──► Exports to .xlsx file
+    │
+    └──► send_email.py → sends via SMTP
+            │
+            ├──► Connects to smtp.gmail.com:587
+            ├──► Authenticates with app password
+            ├──► Attaches .xlsx file(s) and optional image
+            └──► Sends to each recipient in faculty_emails + director_email
+</div></code></pre>
+<h3 id="admin-dashboard-trigger">Admin Dashboard Trigger</h3>
+<p>The admin can also send reports on-demand from the dashboard:</p>
+<ol>
+<li>Choose report type (daily / weekly / monthly)</li>
+<li>Pick a date</li>
+<li>Click &quot;Send Report&quot;</li>
+<li><code>app.py</code> calls the appropriate <code>send_*_report()</code> function</li>
+<li>Email is dispatched to configured recipients</li>
+</ol>
+<h3 id="error-handling">Error Handling</h3>
+<p>Email failures are wrapped in <code>try/except</code> so that:</p>
+<ul>
+<li>A failed email does not crash the attendance pipeline</li>
+<li>The error is logged/flashed to the user</li>
+<li>Other recipients still receive their copy</li>
+</ul>
+<hr>
+<h2 id="database-schema">Database Schema</h2>
+<h3 id="users-table"><code>users</code> Table</h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>SERIAL PK</td>
+<td>Auto-increment user ID</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>VARCHAR(100)</td>
+<td>Display name</td>
+</tr>
+<tr>
+<td><code>email</code></td>
+<td>VARCHAR(100) UNIQUE</td>
+<td>Login email</td>
+</tr>
+<tr>
+<td><code>password_hash</code></td>
+<td>VARCHAR(255)</td>
+<td>Werkzeug-hashed password</td>
+</tr>
+<tr>
+<td><code>role</code></td>
+<td>VARCHAR(20)</td>
+<td><code>admin</code> or <code>college</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="student-table"><code>student</code> Table</h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>std_id</code></td>
+<td>SERIAL PK</td>
+<td>Student ID</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>VARCHAR(100)</td>
+<td>Must match the dataset folder name</td>
+</tr>
+<tr>
+<td><code>email</code></td>
+<td>VARCHAR(100)</td>
+<td>Optional contact email</td>
+</tr>
+</tbody>
+</table>
+<h3 id="subject-table"><code>subject</code> Table</h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sub_id</code></td>
+<td>SERIAL PK</td>
+<td>Subject ID</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>VARCHAR(100)</td>
+<td>Subject name (e.g., Mathematics)</td>
+</tr>
+<tr>
+<td><code>faculty_id</code></td>
+<td>INTEGER</td>
+<td>Faculty reference</td>
+</tr>
+<tr>
+<td><code>from_time</code></td>
+<td>TIME</td>
+<td>Class start time</td>
+</tr>
+<tr>
+<td><code>to_time</code></td>
+<td>TIME</td>
+<td>Class end time</td>
+</tr>
+</tbody>
+</table>
+<h3 id="attendance-table"><code>attendance</code> Table</h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>SERIAL PK</td>
+<td>Record ID</td>
+</tr>
+<tr>
+<td><code>date</code></td>
+<td>DATE</td>
+<td>Attendance date</td>
+</tr>
+<tr>
+<td><code>subject_id</code></td>
+<td>INTEGER FK → subject</td>
+<td>Which subject</td>
+</tr>
+<tr>
+<td><code>student_id</code></td>
+<td>INTEGER FK → student</td>
+<td>Which student</td>
+</tr>
+<tr>
+<td><code>image</code></td>
+<td>TEXT</td>
+<td>Path to the source image</td>
+</tr>
+</tbody>
+</table>
+<h3 id="relationships">Relationships</h3>
+<pre class="hljs"><code><div>users (standalone — portal access)
+
+student ◄──── attendance ────► subject
+  (1:N)         record          (1:N)
+</div></code></pre>
+<hr>
+<h2 id="module-responsibilities">Module Responsibilities</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>What It Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>app.py</code></td>
+<td>Flask web server — handles all HTTP routes, login/signup, admin operations, college operations, API endpoints</td>
+</tr>
+<tr>
+<td><code>Attendance_update_db.py</code></td>
+<td>Core recognition engine — face detection, embedding matching, subject lookup, attendance DB insertion</td>
+</tr>
+<tr>
+<td><code>gen_embed.py</code></td>
+<td>Reads student photos from <code>dataset/</code>, extracts VGG-Face embeddings, saves to <code>embeddings.csv</code></td>
+</tr>
+<tr>
+<td><code>generate_report.py</code></td>
+<td>SQL queries that produce daily/weekly/monthly attendance DataFrames</td>
+</tr>
+<tr>
+<td><code>send_report.py</code></td>
+<td>Wraps report generation + Excel export + email sending into callable functions</td>
+</tr>
+<tr>
+<td><code>send_email.py</code></td>
+<td>Low-level SMTP email utility — connects to Gmail, attaches files, sends message</td>
+</tr>
+<tr>
+<td><code>Schedule.py</code></td>
+<td>Runs the batch pipeline on a timer — processes images, generates reports, sends emails</td>
+</tr>
+<tr>
+<td><code>config.py</code></td>
+<td>Central configuration — DB credentials, email credentials, recipient lists</td>
+</tr>
+<tr>
+<td><code>connection.py</code></td>
+<td>SQLAlchemy engine and session management (handles special characters in DB password)</td>
+</tr>
+<tr>
+<td><code>Monoface.py</code></td>
+<td>Utility for single-face detection (standalone script)</td>
+</tr>
+<tr>
+<td><code>Multiface.py</code></td>
+<td>Utility for multi-face detection (standalone script)</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="data-flow-diagrams">Data Flow Diagrams</h2>
+<h3 id="flow-1-student-registration">Flow 1: Student Registration</h3>
+<pre class="hljs"><code><div>Admin (browser)
+   │
+   │ POST /admin/register
+   │ {name, email, photos[base64]}
+   ▼
+app.py
+   │
+   ├──► PostgreSQL: INSERT INTO student
+   │
+   ├──► Filesystem: dataset/&lt;name&gt;/photo_1.jpg, photo_2.jpg
+   │
+   └──► gen_embed.py: regenerate embeddings.csv
+</div></code></pre>
+<h3 id="flow-2-attendance-marking-portal">Flow 2: Attendance Marking (Portal)</h3>
+<pre class="hljs"><code><div>College Staff (browser)
+   │
+   │ POST /college/mark
+   │ {photo: base64, subject_id: 3}
+   ▼
+app.py
+   │
+   └──► Attendance_update_db.process_group_image_with_subject()
+           │
+           ├──► Load embeddings.csv
+           ├──► DeepFace: detect faces (MTCNN)
+           ├──► DeepFace: extract embeddings (VGG-Face)
+           ├──► NumPy: compute Euclidean distances
+           ├──► Filter by threshold (0.9)
+           ├──► PostgreSQL: get student IDs by name
+           ├──► PostgreSQL: check duplicates + INSERT INTO attendance
+           └──► Return: {recognized students, counts, subject}
+</div></code></pre>
+<h3 id="flow-3-report-generation">Flow 3: Report Generation</h3>
+<pre class="hljs"><code><div>Admin (browser)                    Schedule.py (cron)
+   │                                    │
+   │ POST /admin/send-report           │ job() triggers at scheduled time
+   │ {type: monthly, date: 2026-04}    │
+   ▼                                    ▼
+send_report.py
+   │
+   ├──► generate_report.py → SQL query → pandas DataFrame
+   │
+   ├──► Export to .xlsx
+   │
+   └──► send_email.py → SMTP → Gmail → recipient inbox
+</div></code></pre>
+<h3 id="flow-4-complete-attendance-lifecycle">Flow 4: Complete Attendance Lifecycle</h3>
+<pre class="hljs"><code><div>                    ┌──────────────┐
+                    │  Admin signs  │
+                    │  in to portal │
+                    └──────┬───────┘
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │  Register     │
+                    │  student via  │◄─── Webcam capture
+                    │  webcam       │
+                    └──────┬───────┘
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │  Photos saved │
+                    │  to dataset/  │
+                    └──────┬───────┘
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │  Embeddings   │
+                    │  regenerated  │──── embeddings.csv updated
+                    └──────┬───────┘
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │  College staff│
+                    │  captures     │◄─── Selects subject + webcam
+                    │  classroom    │
+                    └──────┬───────┘
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │  Faces        │
+                    │  detected &amp;   │──── MTCNN + VGG-Face
+                    │  matched      │
+                    └──────┬───────┘
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │  Attendance   │
+                    │  inserted     │──── PostgreSQL
+                    │  into DB      │
+                    └──────┬───────┘
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │  Reports      │
+                    │  generated &amp;  │──── Excel + Email
+                    │  emailed      │
+                    └──────────────┘
+</div></code></pre>
+<hr>
+<h2 id="key-technical-decisions">Key Technical Decisions</h2>
+<table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VGG-Face model</td>
+<td>Proven accuracy for face verification; supported natively by DeepFace</td>
+</tr>
+<tr>
+<td>MTCNN detector</td>
+<td>Handles multiple faces in a single image; more robust than Haar cascades</td>
+</tr>
+<tr>
+<td>Euclidean distance (threshold 0.9)</td>
+<td>Simple, effective; prevents forced matching of unknown faces</td>
+</tr>
+<tr>
+<td>PostgreSQL over SQLite</td>
+<td>Supports concurrent access, better for multi-user web apps</td>
+</tr>
+<tr>
+<td><code>URL.create()</code> in connection.py</td>
+<td>Safely handles special characters (<code>@</code>, <code>#</code>, etc.) in DB passwords</td>
+</tr>
+<tr>
+<td>Embeddings stored in CSV</td>
+<td>Fast to load into NumPy; no model re-inference needed at runtime</td>
+</tr>
+<tr>
+<td>Dual mode (portal + scheduler)</td>
+<td>Portal for interactive use; scheduler for automated institutional use</td>
+</tr>
+<tr>
+<td>Subject selected manually in portal</td>
+<td>Removes dependency on strict class schedules during testing</td>
+</tr>
+<tr>
+<td>Reports as Excel files</td>
+<td>Familiar format for faculty; easy to print/forward</td>
+</tr>
+<tr>
+<td>Gmail SMTP with app password</td>
+<td>Free, widely available; app passwords avoid 2FA issues</td>
+</tr>
+</tbody>
+</table>
+
+</body>
+</html>

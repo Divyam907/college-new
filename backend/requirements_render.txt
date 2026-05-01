@@ -1,0 +1,9 @@
+flask
+flask-cors
+psycopg2-binary
+opencv-python-headless
+numpy
+pandas
+scipy
+openpyxl
+gunicorn

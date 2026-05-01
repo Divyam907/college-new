@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+.env
+*.egg-info/
+
+# Build outputs
+dist/
+build/
+frontend/dist/
+
+# Dataset / Images (large files, not tracked)
+backend/images/*.jpg
+backend/images/*.png
+backend/dataset/*/
+
+# Embeddings (generated, large)
+backend/embeddings.csv
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/settings.json

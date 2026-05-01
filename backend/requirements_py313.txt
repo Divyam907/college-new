@@ -1,0 +1,13 @@
+flask
+psycopg2-binary
+opencv-python-headless
+numpy
+pandas
+deepface
+tensorflow-cpu
+tf_keras
+scipy
+openpyxl
+matplotlib
+schedule
+gunicorn
