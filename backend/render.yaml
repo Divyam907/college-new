@@ -1,0 +1,30 @@
+databases:
+  - name: autoattendance-db
+    plan: free
+    databaseName: autoattendance
+    user: autoattendance_user
+
+services:
+  - type: web
+    name: college-attendance-api
+    runtime: python
+    buildCommand: ./build.sh
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --timeout 300 --workers 1 --preload
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: autoattendance-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: RENDER
+        value: "true"
+      - key: FRONTEND_URL
+        value: https://college-attendance-ui.onrender.com
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASSWORD
+        sync: false
