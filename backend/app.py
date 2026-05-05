@@ -6,6 +6,17 @@ import shutil
 import datetime as dt
 import logging
 import sys
+import pytz
+
+IST = pytz.timezone('Asia/Kolkata')
+
+def _today_ist():
+    """Return today's date in IST."""
+    return dt.datetime.now(IST).date()
+
+def _now_ist():
+    """Return current datetime in IST (naive, for DB storage)."""
+    return dt.datetime.now(IST).replace(tzinfo=None)
 
 # Suppress TensorFlow/CUDA noise
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -558,7 +569,7 @@ def teacher_required(f):
 # ── Utilities ─────────────────────────────────────────────────────────────────
 @app.context_processor
 def inject_now():
-    return {'now': dt.datetime.now(), 'startup_warnings': _WARNINGS}
+    return {'now': _now_ist(), 'startup_warnings': _WARNINGS}
 
 
 def _save_b64_image(b64_str, path, max_size=320):
@@ -918,7 +929,7 @@ def admin_dashboard():
     class_count = cur.fetchone()[0]
     cur.execute('SELECT COUNT(*) FROM section')
     section_count = cur.fetchone()[0]
-    cur.execute('SELECT COUNT(*) FROM attendance WHERE date=%s', (dt.date.today(),))
+    cur.execute('SELECT COUNT(*) FROM attendance WHERE date=%s', (_today_ist(),))
     today_count = cur.fetchone()[0]
     cur.close(); conn.close()
     return render_template('admin/dashboard.html',
@@ -1238,7 +1249,7 @@ def api_subjects():
 @login_required
 def api_timetable(section_id):
     """Get periods for a section. Shows today's periods first, then all others."""
-    today_dow = dt.date.today().weekday()
+    today_dow = _today_ist().weekday()
     conn = get_conn(); cur = conn.cursor()
     cur.execute("""
         SELECT DISTINCT ON (period_name) tt_id, period_name, teacher_name, from_time, to_time, is_recess, day_of_week
@@ -1267,7 +1278,7 @@ def admin_reports():
 @admin_required
 def admin_send_report():
     report_type = request.form.get('report_type', 'daily')
-    date_str    = request.form.get('date', dt.date.today().strftime('%Y-%m-%d'))
+    date_str    = request.form.get('date', _today_ist().strftime('%Y-%m-%d'))
     class_id    = request.form.get('class_id', '')
     section_id  = request.form.get('section_id', '')
     recipients  = request.form.get('recipients', '').strip()
@@ -1690,7 +1701,7 @@ def admin_send_whatsapp_summary():
 @college_required
 def college_dashboard():
     conn = get_conn(); cur = conn.cursor()
-    cur.execute('SELECT COUNT(*) FROM attendance WHERE date=%s', (dt.date.today(),))
+    cur.execute('SELECT COUNT(*) FROM attendance WHERE date=%s', (_today_ist(),))
     today_count = cur.fetchone()[0]
     cur.execute('SELECT COUNT(*) FROM student')
     total_students = cur.fetchone()[0]
@@ -1717,7 +1728,7 @@ def mark_attendance():
         if not section_id:
             return jsonify({'error': 'Please select a class and section.'}), 400
 
-        filename = dt.datetime.now().strftime('%H-%M-%S') + '.jpg'
+        filename = _now_ist().strftime('%H-%M-%S') + '.jpg'
         img_path = os.path.join(IMAGES_DIR, filename)
         try:
             _save_b64_image(data['photo'], img_path, max_size=640)
@@ -1765,19 +1776,19 @@ def mark_attendance():
                         cur.execute("""
                             SELECT 1 FROM attendance
                             WHERE date=%s AND student_id=%s AND subject_id=%s
-                        """, (dt.date.today(), std_id, subject_id))
+                        """, (_today_ist(), std_id, subject_id))
                     else:
                         cur.execute("""
                             SELECT 1 FROM attendance
                             WHERE date=%s AND student_id=%s AND section_id=%s AND period_id=%s
-                        """, (dt.date.today(), std_id, int(section_id), int(period_id) if period_id else None))
+                        """, (_today_ist(), std_id, int(section_id), int(period_id) if period_id else None))
 
                     if not cur.fetchone():
                         cur.execute("""
                             INSERT INTO attendance (date, student_id, subject_id, image, section_id, period_id)
                             VALUES (%s, %s, %s, %s, %s, %s)
                         """, (
-                            dt.date.today(), std_id,
+                            _today_ist(), std_id,
                             subject_id,  # may be None
                             img_path,
                             int(section_id),
@@ -1846,7 +1857,7 @@ def mark_attendance():
 @app.route('/college/records')
 @college_required
 def attendance_records():
-    date_str = request.args.get('date', dt.date.today().strftime('%Y-%m-%d'))
+    date_str = request.args.get('date', _today_ist().strftime('%Y-%m-%d'))
     class_id = request.args.get('class_id', '')
     section_id = request.args.get('section_id', '')
 
@@ -2093,7 +2104,7 @@ def college_engagement_capture():
                 })
 
         # ── Save class-level engagement_log ───────────────────────────────
-        now = dt.datetime.now()
+        now = _now_ist()
         cur.execute("""
             INSERT INTO engagement_log (date, section_id, period_id, timestamp,
                                         total_faces, attentive_pct, confused_pct,
@@ -2101,7 +2112,7 @@ def college_engagement_capture():
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id
         """, (
-            dt.date.today(), section_id, period_id, now,
+            _today_ist(), section_id, period_id, now,
             engagement.total_faces, engagement.attentive_pct,
             engagement.confused_pct, engagement.distracted_pct,
             engagement.avg_engagement_score
@@ -2151,7 +2162,7 @@ def college_engagement_capture():
 @teacher_required
 def teacher_dashboard():
     conn = get_conn(); cur = conn.cursor()
-    cur.execute('SELECT COUNT(*) FROM attendance WHERE date=%s', (dt.date.today(),))
+    cur.execute('SELECT COUNT(*) FROM attendance WHERE date=%s', (_today_ist(),))
     today_count = cur.fetchone()[0]
     cur.execute('SELECT COUNT(*) FROM student')
     total_students = cur.fetchone()[0]
@@ -2180,10 +2191,12 @@ def _check_time_window(from_time, to_time):
     Closing: to_time - 5min to to_time + 10min
     Returns: (can_mark, window_type, message)
     """
-    now = dt.datetime.now().time()
-    from_dt = dt.datetime.combine(dt.date.today(), from_time)
-    to_dt = dt.datetime.combine(dt.date.today(), to_time)
-    now_dt = dt.datetime.combine(dt.date.today(), now)
+    now_ist = dt.datetime.now(IST)
+    today_ist = now_ist.date()
+    now = now_ist.time()
+    from_dt = dt.datetime.combine(today_ist, from_time)
+    to_dt = dt.datetime.combine(today_ist, to_time)
+    now_dt = dt.datetime.combine(today_ist, now)
 
     # Opening window: start - 10min to start + 10min
     open_start = from_dt - dt.timedelta(minutes=10)
@@ -2221,7 +2234,7 @@ def teacher_attendance():
 @teacher_required
 def api_teacher_dashboard():
     conn = get_conn(); cur = conn.cursor()
-    cur.execute('SELECT COUNT(*) FROM attendance WHERE date=%s', (dt.date.today(),))
+    cur.execute('SELECT COUNT(*) FROM attendance WHERE date=%s', (_today_ist(),))
     today_count = cur.fetchone()[0]
     cur.execute('SELECT COUNT(*) FROM student')
     total_students = cur.fetchone()[0]
@@ -2331,7 +2344,7 @@ def api_teacher_periods(section_id=None):
     if not section_id:
         return jsonify([]), 200
     section_id = int(section_id)
-    today_dow = dt.date.today().weekday()
+    today_dow = dt.datetime.now(IST).weekday()
     conn = get_conn(); cur = conn.cursor()
     cur.execute("""
         SELECT tt_id, period_name, teacher_name, from_time, to_time, is_recess
@@ -2390,7 +2403,7 @@ def teacher_mark_attendance():
     cur.close(); conn.close()
 
     # ── Process image and mark attendance (reuse existing logic) ───────────
-    filename = dt.datetime.now().strftime('%H-%M-%S') + '.jpg'
+    filename = _now_ist().strftime('%H-%M-%S') + '.jpg'
     img_path = os.path.join(IMAGES_DIR, filename)
     try:
         _save_b64_image(data['photo'], img_path, max_size=640)
@@ -2424,14 +2437,14 @@ def teacher_mark_attendance():
                 cur.execute("""
                     SELECT 1 FROM attendance
                     WHERE date=%s AND student_id=%s AND section_id=%s AND period_id=%s
-                """, (dt.date.today(), std_id, int(section_id), int(period_id)))
+                """, (_today_ist(), std_id, int(section_id), int(period_id)))
                 if cur.fetchone():
                     already_marked_ids.append(std_id)
                 else:
                     cur.execute("""
                         INSERT INTO attendance (date, student_id, image, section_id, period_id)
                         VALUES (%s, %s, %s, %s, %s)
-                    """, (dt.date.today(), std_id, img_path, int(section_id), int(period_id)))
+                    """, (_today_ist(), std_id, img_path, int(section_id), int(period_id)))
                     newly_marked_ids.append(std_id)
             conn.commit(); cur.close(); conn.close()
 
@@ -2584,8 +2597,8 @@ def api_teacher_liveness_enable():
 
     # If no period_id, find current active period for section
     if not period_id:
-        today_dow = dt.date.today().weekday()
-        now = dt.datetime.now().time()
+        today_dow = _today_ist().weekday()
+        now = _now_ist().time()
         cur.execute("""
             SELECT tt_id, from_time, to_time FROM timetable
             WHERE section_id=%s AND day_of_week=%s AND from_time <= %s AND to_time >= %s
@@ -2882,14 +2895,14 @@ def teacher_liveness_capture():
         annotated_b64 = base64.b64encode(buffer).decode('utf-8')
 
         # Save engagement log
-        now = dt.datetime.now()
+        now = _now_ist()
         cur.execute("""
             INSERT INTO engagement_log (date, section_id, period_id, timestamp,
                                         total_faces, attentive_pct, confused_pct,
                                         distracted_pct, avg_score)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, (
-            dt.date.today(), section_id, period_id, now,
+            _today_ist(), section_id, period_id, now,
             engagement.total_faces, engagement.attentive_pct,
             engagement.confused_pct, engagement.distracted_pct,
             engagement.avg_engagement_score
@@ -3002,8 +3015,8 @@ def teacher_send_report():
     """Send attendance report based on hierarchy selection."""
     data = request.get_json() if request.is_json else request.form
     section_id = data.get('section_id', '')
-    date_from = data.get('date_from', dt.date.today().strftime('%Y-%m-%d'))
-    date_to = data.get('date_to', dt.date.today().strftime('%Y-%m-%d'))
+    date_from = data.get('date_from', _today_ist().strftime('%Y-%m-%d'))
+    date_to = data.get('date_to', _today_ist().strftime('%Y-%m-%d'))
     send_to_authorities = data.get('send_to_authorities') in ('true', 'on', True, '1', 1)
     send_to_parents = data.get('send_to_parents') in ('true', 'on', True, '1', 1)
 
@@ -3109,7 +3122,7 @@ def teacher_send_report():
         ws['A2'].font = subtitle_font
         ws.append([f"Date Range: {from_date.strftime('%d %B %Y')} to {to_date.strftime('%d %B %Y')}"])
         ws['A3'].font = subtitle_font
-        ws.append([f"Generated: {dt.datetime.now().strftime('%d %B %Y, %I:%M %p')}"])
+        ws.append([f"Generated: {_now_ist().strftime('%d %B %Y, %I:%M %p')}"])
         ws.append([])
 
         # Build per-day, per-period attendance matrix
@@ -3404,7 +3417,7 @@ def teacher_schedule_report():
     send_to_parents = data.get('send_to_parents') == 'on'
 
     # Calculate next_send
-    now = dt.datetime.now()
+    now = _now_ist()
     if frequency == 'daily':
         next_send = now.replace(hour=18, minute=0, second=0) + dt.timedelta(days=1)
     elif frequency == 'weekly':
@@ -3465,7 +3478,7 @@ def teacher_toggle_schedule(schedule_id):
 @college_required
 def api_college_dashboard():
     conn = get_conn(); cur = conn.cursor()
-    cur.execute('SELECT COUNT(*) FROM attendance WHERE date=%s', (dt.date.today(),))
+    cur.execute('SELECT COUNT(*) FROM attendance WHERE date=%s', (_today_ist(),))
     today_count = cur.fetchone()[0]
     cur.execute('SELECT COUNT(*) FROM student')
     total_students = cur.fetchone()[0]
@@ -4208,8 +4221,8 @@ def api_college_bulk_register():
 @college_required
 def api_college_attendance():
     """Get attendance records with filters."""
-    date_from = request.args.get('date_from', dt.date.today().strftime('%Y-%m-%d'))
-    date_to = request.args.get('date_to', dt.date.today().strftime('%Y-%m-%d'))
+    date_from = request.args.get('date_from', _today_ist().strftime('%Y-%m-%d'))
+    date_to = request.args.get('date_to', _today_ist().strftime('%Y-%m-%d'))
     class_id = request.args.get('class_id', '')
     section_id = request.args.get('section_id', '')
     batch_id = request.args.get('batch_id', '')
@@ -4248,8 +4261,8 @@ def api_college_attendance():
 def api_college_attendance_download():
     """Download attendance as Excel with customizable filters."""
     from flask import send_file
-    date_from = request.args.get('date_from', dt.date.today().strftime('%Y-%m-%d'))
-    date_to = request.args.get('date_to', dt.date.today().strftime('%Y-%m-%d'))
+    date_from = request.args.get('date_from', _today_ist().strftime('%Y-%m-%d'))
+    date_to = request.args.get('date_to', _today_ist().strftime('%Y-%m-%d'))
     class_id = request.args.get('class_id', '')
     section_id = request.args.get('section_id', '')
     batch_id = request.args.get('batch_id', '')
@@ -4392,7 +4405,7 @@ if __name__ == '__main__':
         import time as _time
         while True:
             try:
-                now = dt.datetime.now()
+                now = _now_ist()
                 current_time = now.strftime('%H:%M')
                 current_day = now.weekday()  # 0=Monday
                 current_date = now.day
@@ -4465,3 +4478,4 @@ if __name__ == '__main__':
 else:
     # When imported by gunicorn, still initialize DB tables
     init_db()
+
