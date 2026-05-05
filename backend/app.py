@@ -4476,6 +4476,14 @@ if __name__ == '__main__':
 
     app.run(debug=True, host='0.0.0.0', port=5000)
 else:
-    # When imported by gunicorn, still initialize DB tables
-    init_db()
+    # When imported by gunicorn, initialize DB in a background thread
+    # so gunicorn can bind the port immediately without timeout
+    import threading as _threading
+    def _bg_init():
+        try:
+            init_db()
+            print("[startup] DB initialized successfully.", flush=True)
+        except Exception as _e:
+            print(f"[startup] DB init error: {_e}", flush=True)
+    _threading.Thread(target=_bg_init, daemon=True).start()
 
