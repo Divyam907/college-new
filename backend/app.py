@@ -227,33 +227,53 @@ def handle_template_not_found(e):
 
 # ── DB helpers ────────────────────────────────────────────────────────────────
 from psycopg2 import pool as _pg_pool
+import threading as _pool_lock
 
 _db_pool = None
+_pool_init_lock = _pool_lock.Lock()
 
 def _get_pool():
     global _db_pool
-    if _db_pool is None:
-        _db_pool = _pg_pool.ThreadedConnectionPool(
-            minconn=1, maxconn=5, **DB_PARAMS
-        )
+    if _db_pool is not None:
+        return _db_pool
+    with _pool_init_lock:
+        if _db_pool is None:
+            try:
+                _db_pool = _pg_pool.ThreadedConnectionPool(minconn=1, maxconn=5, **DB_PARAMS)
+                print("[DB] Connection pool created.", flush=True)
+            except Exception as _e:
+                print(f"[DB] Pool creation failed: {_e}", flush=True)
     return _db_pool
 
 def get_conn():
-    try:
-        return _get_pool().getconn()
-    except Exception:
-        # Fallback to direct connection if pool fails
-        return psycopg2.connect(**DB_PARAMS)
+    pool = _get_pool()
+    if pool:
+        try:
+            return pool.getconn()
+        except Exception:
+            pass
+    # Fallback to direct connection
+    return psycopg2.connect(**DB_PARAMS)
 
 def _return_conn(conn):
     """Return a connection back to the pool."""
-    try:
-        _get_pool().putconn(conn)
-    except Exception:
+    pool = _get_pool()
+    if pool:
         try:
-            conn.close()
+            pool.putconn(conn)
+            return
         except Exception:
             pass
+    try:
+        conn.close()
+    except Exception:
+        pass
+
+# Eagerly initialize the pool at import time (non-blocking, best-effort)
+try:
+    _get_pool()
+except Exception:
+    pass
 
 
 def init_db():
