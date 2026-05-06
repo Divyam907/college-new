@@ -226,8 +226,34 @@ def handle_template_not_found(e):
 
 
 # ── DB helpers ────────────────────────────────────────────────────────────────
+from psycopg2 import pool as _pg_pool
+
+_db_pool = None
+
+def _get_pool():
+    global _db_pool
+    if _db_pool is None:
+        _db_pool = _pg_pool.ThreadedConnectionPool(
+            minconn=1, maxconn=5, **DB_PARAMS
+        )
+    return _db_pool
+
 def get_conn():
-    return psycopg2.connect(**DB_PARAMS)
+    try:
+        return _get_pool().getconn()
+    except Exception:
+        # Fallback to direct connection if pool fails
+        return psycopg2.connect(**DB_PARAMS)
+
+def _return_conn(conn):
+    """Return a connection back to the pool."""
+    try:
+        _get_pool().putconn(conn)
+    except Exception:
+        try:
+            conn.close()
+        except Exception:
+            pass
 
 
 def init_db():
@@ -511,7 +537,7 @@ def init_db():
 
     conn.commit()
     cur.close()
-    conn.close()
+    _return_conn(conn)
 
 
 # ── Auth decorators ───────────────────────────────────────────────────────────
@@ -771,7 +797,7 @@ def _get_student_ids_local(names):
     placeholders = ','.join(['%s'] * len(names))
     cur.execute(f"SELECT std_id, name FROM student WHERE name IN ({placeholders})", names)
     results = cur.fetchall()
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
     return {name: std_id for std_id, name in results}
 
 
@@ -822,7 +848,7 @@ def api_auth_login():
         return jsonify({'error': 'Email and password required'}), 400
     conn = get_conn(); cur = conn.cursor()
     cur.execute('SELECT id,name,email,password_hash,role FROM users WHERE email=%s', (email,))
-    user = cur.fetchone(); cur.close(); conn.close()
+    user = cur.fetchone(); cur.close(); _return_conn(conn)
     if not user or not check_password_hash(user[3], password):
         return jsonify({'error': 'Invalid email or password'}), 401
     if role_hint and user[4] != role_hint:
@@ -849,7 +875,7 @@ def api_auth_signup():
             'INSERT INTO users (name,email,password_hash,role) VALUES (%s,%s,%s,%s)',
             (name, email, generate_password_hash(password), role)
         )
-        conn.commit(); cur.close(); conn.close()
+        conn.commit(); cur.close(); _return_conn(conn)
         return jsonify({'message': 'Account created! Please log in.'})
     except psycopg2.errors.UniqueViolation:
         return jsonify({'error': 'Email already registered'}), 409
@@ -931,7 +957,7 @@ def admin_dashboard():
     section_count = cur.fetchone()[0]
     cur.execute('SELECT COUNT(*) FROM attendance WHERE date=%s', (_today_ist(),))
     today_count = cur.fetchone()[0]
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
     return render_template('admin/dashboard.html',
                            student_count=student_count,
                            class_count=class_count,
@@ -951,7 +977,7 @@ def admin_classes():
         FROM class c ORDER BY c.name
     """)
     classes = cur.fetchall()
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
     return render_template('admin/classes.html', classes=classes)
 
 
@@ -965,7 +991,7 @@ def admin_add_class():
     try:
         conn = get_conn(); cur = conn.cursor()
         cur.execute('INSERT INTO class (name) VALUES (%s)', (name,))
-        conn.commit(); cur.close(); conn.close()
+        conn.commit(); cur.close(); _return_conn(conn)
         flash(f'Class "{name}" added.', 'success')
     except psycopg2.errors.UniqueViolation:
         flash(f'Class "{name}" already exists.', 'danger')
@@ -979,7 +1005,7 @@ def admin_add_class():
 def admin_delete_class(class_id):
     conn = get_conn(); cur = conn.cursor()
     cur.execute('DELETE FROM class WHERE class_id=%s', (class_id,))
-    conn.commit(); cur.close(); conn.close()
+    conn.commit(); cur.close(); _return_conn(conn)
     flash('Class deleted.', 'success')
     return redirect(url_for('admin_classes'))
 
@@ -999,7 +1025,7 @@ def admin_sections(class_id):
         FROM section s WHERE s.class_id=%s ORDER BY s.name
     """, (class_id,))
     sections = cur.fetchall()
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
     return render_template('admin/sections.html', class_id=class_id, class_name=cls[0], sections=sections)
 
 
@@ -1013,7 +1039,7 @@ def admin_add_section(class_id):
     try:
         conn = get_conn(); cur = conn.cursor()
         cur.execute('INSERT INTO section (class_id, name) VALUES (%s, %s)', (class_id, name))
-        conn.commit(); cur.close(); conn.close()
+        conn.commit(); cur.close(); _return_conn(conn)
         flash(f'Section "{name}" added.', 'success')
     except psycopg2.errors.UniqueViolation:
         flash(f'Section "{name}" already exists in this class.', 'danger')
@@ -1030,7 +1056,7 @@ def admin_delete_section(section_id):
     row = cur.fetchone()
     class_id = row[0] if row else None
     cur.execute('DELETE FROM section WHERE section_id=%s', (section_id,))
-    conn.commit(); cur.close(); conn.close()
+    conn.commit(); cur.close(); _return_conn(conn)
     flash('Section deleted.', 'success')
     return redirect(url_for('admin_sections', class_id=class_id) if class_id else url_for('admin_classes'))
 
@@ -1055,7 +1081,7 @@ def admin_timetable(section_id):
         FROM timetable WHERE section_id=%s ORDER BY day_of_week, from_time
     """, (section_id,))
     periods = cur.fetchall()
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
 
     # Group by day
     timetable = {i: [] for i in range(7)}
@@ -1090,7 +1116,7 @@ def admin_add_period(section_id):
         INSERT INTO timetable (section_id, day_of_week, period_name, teacher_name, from_time, to_time, is_recess)
         VALUES (%s, %s, %s, %s, %s, %s, %s)
     """, (section_id, day, period_name, teacher_name or None, from_time, to_time, is_recess))
-    conn.commit(); cur.close(); conn.close()
+    conn.commit(); cur.close(); _return_conn(conn)
     flash(f'Period "{period_name}" added for {DAYS[day]}.', 'success')
     return redirect(url_for('admin_timetable', section_id=section_id))
 
@@ -1103,7 +1129,7 @@ def admin_delete_period(tt_id):
     row = cur.fetchone()
     section_id = row[0] if row else None
     cur.execute('DELETE FROM timetable WHERE tt_id=%s', (tt_id,))
-    conn.commit(); cur.close(); conn.close()
+    conn.commit(); cur.close(); _return_conn(conn)
     flash('Period deleted.', 'success')
     return redirect(url_for('admin_timetable', section_id=section_id) if section_id else url_for('admin_classes'))
 
@@ -1121,7 +1147,7 @@ def admin_students():
         ORDER BY c.name, s.name, st.roll_no, st.name
     """)
     students = cur.fetchall()
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
     return render_template('admin/students.html', students=students)
 
 
@@ -1142,14 +1168,14 @@ def admin_register_student():
         if not name:
             flash('Student name is required.', 'danger')
             cur.execute('SELECT class_id, name FROM class ORDER BY name')
-            classes = cur.fetchall(); cur.close(); conn.close()
+            classes = cur.fetchall(); cur.close(); _return_conn(conn)
             return render_template('admin/register_student.html', classes=classes)
 
         photos = json.loads(photos_json)
         if not photos:
             flash('Please capture at least one photo.', 'danger')
             cur.execute('SELECT class_id, name FROM class ORDER BY name')
-            classes = cur.fetchall(); cur.close(); conn.close()
+            classes = cur.fetchall(); cur.close(); _return_conn(conn)
             return render_template('admin/register_student.html', classes=classes)
 
         # Limit to 2 photos max to save memory on free tier
@@ -1171,10 +1197,10 @@ def admin_register_student():
         except Exception as e:
             flash(f'Database error: {e}', 'danger')
             cur.execute('SELECT class_id, name FROM class ORDER BY name')
-            classes = cur.fetchall(); cur.close(); conn.close()
+            classes = cur.fetchall(); cur.close(); _return_conn(conn)
             return render_template('admin/register_student.html', classes=classes)
 
-        cur.close(); conn.close()
+        cur.close(); _return_conn(conn)
 
         import gc
         student_dir = os.path.join(DATASET_DIR, name)
@@ -1193,7 +1219,7 @@ def admin_register_student():
     # GET
     cur.execute('SELECT class_id, name FROM class ORDER BY name')
     classes = cur.fetchall()
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
     return render_template('admin/register_student.html', classes=classes)
 
 
@@ -1221,7 +1247,7 @@ def delete_student(std_id):
             except Exception:
                 pass
         flash(f'Student "{name}" deleted.', 'success')
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
     return redirect(url_for('admin_students'))
 
 
@@ -1231,7 +1257,7 @@ def delete_student(std_id):
 def api_sections(class_id):
     conn = get_conn(); cur = conn.cursor()
     cur.execute('SELECT section_id, name FROM section WHERE class_id=%s ORDER BY name', (class_id,))
-    rows = cur.fetchall(); cur.close(); conn.close()
+    rows = cur.fetchall(); cur.close(); _return_conn(conn)
     return jsonify([{'id': r[0], 'name': r[1]} for r in rows])
 
 
@@ -1240,7 +1266,7 @@ def api_sections(class_id):
 def api_subjects():
     conn = get_conn(); cur = conn.cursor()
     cur.execute('SELECT sub_id, name, from_time, to_time FROM subject ORDER BY from_time')
-    rows = cur.fetchall(); cur.close(); conn.close()
+    rows = cur.fetchall(); cur.close(); _return_conn(conn)
     return jsonify([{'id': r[0], 'name': r[1],
                      'time': f"{str(r[2])[:5]} – {str(r[3])[:5]}"} for r in rows])
 
@@ -1256,7 +1282,7 @@ def api_timetable(section_id):
         FROM timetable WHERE section_id=%s
         ORDER BY period_name, (day_of_week = %s) DESC, from_time
     """, (section_id, today_dow))
-    rows = cur.fetchall(); cur.close(); conn.close()
+    rows = cur.fetchall(); cur.close(); _return_conn(conn)
     return jsonify([{
         'id': r[0], 'name': r[1], 'teacher': r[2],
         'time': f"{str(r[3])[:5]} – {str(r[4])[:5]}", 'is_recess': r[5]
@@ -1270,7 +1296,7 @@ def admin_reports():
     conn = get_conn(); cur = conn.cursor()
     cur.execute('SELECT class_id, name FROM class ORDER BY name')
     classes = cur.fetchall()
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
     return render_template('admin/reports.html', classes=classes)
 
 
@@ -1389,7 +1415,7 @@ def admin_engagement():
     classes = cur.fetchall()
     cur.execute('SELECT section_id, name, class_id FROM section ORDER BY name')
     sections = cur.fetchall()
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
     return render_template('admin/engagement.html', logs=logs, classes=classes,
                            sections=sections, stats=stats,
                            student_logs=student_logs,
@@ -1484,7 +1510,7 @@ def admin_cameras():
         FROM section s JOIN class c ON s.class_id=c.class_id ORDER BY c.name, s.name
     """)
     sections = cur.fetchall()
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
 
     ca = get_continuous_attendance()
     status = ca.get_status() if ca else {'running': False, 'streams': {}}
@@ -1512,7 +1538,7 @@ def admin_add_camera():
             INSERT INTO camera_streams (stream_key, name, rtsp_url, section_id)
             VALUES (%s, %s, %s, %s)
         """, (stream_key, name, rtsp_url or 'webcam', int(section_id)))
-        conn.commit(); cur.close(); conn.close()
+        conn.commit(); cur.close(); _return_conn(conn)
 
         # Register with continuous attendance
         ca = get_continuous_attendance()
@@ -1537,7 +1563,7 @@ def admin_delete_camera(cam_id):
         if ca:
             ca.remove_stream(row[0])
     cur.execute('DELETE FROM camera_streams WHERE id=%s', (cam_id,))
-    conn.commit(); cur.close(); conn.close()
+    conn.commit(); cur.close(); _return_conn(conn)
     flash('Camera removed.', 'success')
     return redirect(url_for('admin_cameras'))
 
@@ -1560,7 +1586,7 @@ def admin_toggle_continuous():
         cur.execute('SELECT stream_key, rtsp_url, section_id, name FROM camera_streams WHERE is_active=TRUE')
         for row in cur.fetchall():
             ca.add_stream(row[0], row[1], row[2], row[3])
-        cur.close(); conn.close()
+        cur.close(); _return_conn(conn)
         ca.start()
         flash('Continuous attendance started!', 'success')
 
@@ -1600,7 +1626,7 @@ def admin_whatsapp():
     students = cur.fetchall()
     cur.execute('SELECT class_id, name FROM class ORDER BY name')
     classes = cur.fetchall()
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
 
     whatsapp_configured = whatsapp_client is not None
     return render_template('admin/whatsapp.html', recipients=recipients,
@@ -1633,7 +1659,7 @@ def admin_add_whatsapp_recipient():
         """, (name, phone, role,
               int(student_id) if student_id else None,
               int(class_id) if class_id else None))
-        conn.commit(); cur.close(); conn.close()
+        conn.commit(); cur.close(); _return_conn(conn)
         flash(f'Recipient "{name}" ({role}) added.', 'success')
     except Exception as e:
         flash(f'Error: {e}', 'danger')
@@ -1646,7 +1672,7 @@ def admin_add_whatsapp_recipient():
 def admin_delete_whatsapp_recipient(rec_id):
     conn = get_conn(); cur = conn.cursor()
     cur.execute('DELETE FROM whatsapp_recipients WHERE id=%s', (rec_id,))
-    conn.commit(); cur.close(); conn.close()
+    conn.commit(); cur.close(); _return_conn(conn)
     flash('Recipient removed.', 'success')
     return redirect(url_for('admin_whatsapp'))
 
@@ -1707,7 +1733,7 @@ def college_dashboard():
     total_students = cur.fetchone()[0]
     cur.execute('SELECT COUNT(*) FROM class')
     class_count = cur.fetchone()[0]
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
     return render_template('college/dashboard.html',
                            today_count=today_count,
                            total_students=total_students,
@@ -1745,7 +1771,7 @@ def mark_attendance():
                     sub_row = cur.fetchone()
                     if sub_row:
                         subject_id = sub_row[0]
-                cur.close(); conn.close()
+                cur.close(); _return_conn(conn)
 
             # ── Face Recognition (lightweight — no TensorFlow) ────────────
             embeddings_csv = os.path.join(BASE_DIR, 'embeddings.csv')
@@ -1794,7 +1820,7 @@ def mark_attendance():
                             int(section_id),
                             int(period_id) if period_id else None
                         ))
-                conn.commit(); cur.close(); conn.close()
+                conn.commit(); cur.close(); _return_conn(conn)
 
             # Fetch student details for response
             students_present = []
@@ -1802,7 +1828,7 @@ def mark_attendance():
                 conn = get_conn(); cur = conn.cursor()
                 cur.execute('SELECT std_id, name, email FROM student WHERE std_id = ANY(%s)', (identified_student_ids,))
                 students_present = [{'id': r[0], 'name': r[1], 'email': r[2]} for r in cur.fetchall()]
-                cur.close(); conn.close()
+                cur.close(); _return_conn(conn)
 
             result = {
                 'image_name': filename,
@@ -1850,7 +1876,7 @@ def mark_attendance():
     conn = get_conn(); cur = conn.cursor()
     cur.execute('SELECT class_id, name FROM class ORDER BY name')
     classes = cur.fetchall()
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
     return render_template('college/mark_attendance.html', classes=classes)
 
 
@@ -1892,7 +1918,7 @@ def attendance_records():
     cur.execute('SELECT class_id, name FROM class ORDER BY name')
     classes = cur.fetchall()
 
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
     return render_template('college/records.html', records=records, date=date_str,
                            dates=dates, classes=classes,
                            selected_class=class_id, selected_section=section_id)
@@ -1935,7 +1961,7 @@ def college_engagement():
     """)
     recent_logs = cur.fetchall()
 
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
     return render_template('college/engagement.html', classes=classes,
                            active_sessions=active_sessions, recent_logs=recent_logs)
 
@@ -1962,7 +1988,7 @@ def college_engagement_start():
     existing = cur.fetchone()
     if existing:
         flash('Engagement monitoring is already active for this section/period.', 'info')
-        cur.close(); conn.close()
+        cur.close(); _return_conn(conn)
         return redirect(url_for('college_engagement'))
 
     cur.execute("""
@@ -1970,7 +1996,7 @@ def college_engagement_start():
         VALUES (%s, %s, %s, %s)
     """, (section_id, period_id, interval, session.get('user_id')))
     conn.commit()
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
 
     flash('Engagement monitoring started! Captures will begin automatically.', 'success')
     return redirect(url_for('college_engagement'))
@@ -1991,7 +2017,7 @@ def college_engagement_stop():
         WHERE id=%s
     """, (session_id,))
     conn.commit()
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
 
     flash('Engagement monitoring stopped.', 'success')
     return redirect(url_for('college_engagement'))
@@ -2027,14 +2053,14 @@ def college_engagement_capture():
         """, (session_id,))
         sess = cur.fetchone()
         if not sess:
-            cur.close(); conn.close()
+            cur.close(); _return_conn(conn)
             return jsonify({'error': 'Session not active or not found'}), 404
         section_id, period_id = sess
 
         # ── Engagement analysis (class-level) ─────────────────────────────
         _load_ai_modules()
         if analyze_engagement is None:
-            cur.close(); conn.close()
+            cur.close(); _return_conn(conn)
             return jsonify({'error': 'Engagement analysis not available on this server (lightweight mode)'}), 503
         engagement = analyze_engagement(img)
 
@@ -2047,7 +2073,7 @@ def college_engagement_capture():
                 import pandas as pd_local
                 from Attendance_update_db import identify_persons_in_group_photo, get_student_ids
             except ImportError:
-                cur.close(); conn.close()
+                cur.close(); _return_conn(conn)
                 return jsonify({'error': 'AI modules not available (lightweight mode)'}), 503
 
             embeddings_df = pd_local.read_csv(embeddings_csv)
@@ -2133,7 +2159,7 @@ def college_engagement_capture():
                 sd['gaze'], sd['liveness_score'], sd['is_live']
             ))
 
-        conn.commit(); cur.close(); conn.close()
+        conn.commit(); cur.close(); _return_conn(conn)
 
         # Response for college: class-level stats + identified count only
         # Per-student details are stored in DB and visible only to admin
@@ -2173,7 +2199,7 @@ def teacher_dashboard():
     # Active engagement sessions
     cur.execute('SELECT COUNT(*) FROM engagement_sessions WHERE is_active=TRUE')
     active_sessions = cur.fetchone()[0]
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
     return render_template('teacher/dashboard.html',
                            today_count=today_count,
                            total_students=total_students,
@@ -2226,7 +2252,7 @@ def teacher_attendance():
     conn = get_conn(); cur = conn.cursor()
     cur.execute('SELECT batch_id, passing_year, name FROM batch ORDER BY passing_year DESC')
     batches = cur.fetchall()
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
     return render_template('teacher/attendance.html', batches=batches)
 
 
@@ -2242,7 +2268,7 @@ def api_teacher_dashboard():
     batch_count = cur.fetchone()[0]
     cur.execute('SELECT COUNT(*) FROM engagement_sessions WHERE is_active=TRUE')
     active_sessions = cur.fetchone()[0]
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
     return jsonify({'today_count': today_count, 'total_students': total_students,
                     'batch_count': batch_count, 'active_sessions': active_sessions})
 
@@ -2252,7 +2278,7 @@ def api_teacher_dashboard():
 def api_teacher_batches():
     conn = get_conn(); cur = conn.cursor()
     cur.execute('SELECT batch_id, passing_year, name FROM batch ORDER BY passing_year DESC')
-    rows = cur.fetchall(); cur.close(); conn.close()
+    rows = cur.fetchall(); cur.close(); _return_conn(conn)
     return jsonify([{'id': r[0], 'year': r[1], 'name': r[2]} for r in rows])
 
 
@@ -2268,7 +2294,7 @@ def api_teacher_branches():
         """, (int(batch_id),))
     else:
         cur.execute('SELECT branch_id, name, code FROM branch ORDER BY name')
-    rows = cur.fetchall(); cur.close(); conn.close()
+    rows = cur.fetchall(); cur.close(); _return_conn(conn)
     return jsonify([{'id': r[0], 'name': r[1], 'code': r[2]} for r in rows])
 
 
@@ -2288,7 +2314,7 @@ def api_teacher_classes():
         params.append(int(batch_id))
     query += ' ORDER BY name'
     cur.execute(query, params)
-    rows = cur.fetchall(); cur.close(); conn.close()
+    rows = cur.fetchall(); cur.close(); _return_conn(conn)
     return jsonify([{'id': r[0], 'name': r[1]} for r in rows])
 
 
@@ -2301,7 +2327,7 @@ def api_teacher_sections(class_id=None):
         return jsonify([]), 200
     conn = get_conn(); cur = conn.cursor()
     cur.execute('SELECT section_id, name FROM section WHERE class_id=%s ORDER BY name', (int(class_id),))
-    rows = cur.fetchall(); cur.close(); conn.close()
+    rows = cur.fetchall(); cur.close(); _return_conn(conn)
     return jsonify([{'id': r[0], 'name': r[1]} for r in rows])
 
 
@@ -2329,7 +2355,7 @@ def api_teacher_engagement(section_id):
     query += " GROUP BY e.date ORDER BY e.date DESC LIMIT 60"
     cur.execute(query, params)
     rows = cur.fetchall()
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
     result = [{'date': str(r[0]), 'score': round(float(r[1]), 1), 'engaged': round(float(r[2]), 1),
                'disengaged': round(float(r[3]), 1), 'captures': int(r[4])} for r in rows]
     return jsonify(result)
@@ -2351,7 +2377,7 @@ def api_teacher_periods(section_id=None):
         FROM timetable WHERE section_id=%s AND day_of_week=%s
         ORDER BY from_time
     """, (section_id, today_dow))
-    rows = cur.fetchall(); cur.close(); conn.close()
+    rows = cur.fetchall(); cur.close(); _return_conn(conn)
 
     periods = []
     for r in rows:
@@ -2389,18 +2415,18 @@ def teacher_mark_attendance():
     cur.execute('SELECT from_time, to_time FROM timetable WHERE tt_id=%s', (int(period_id),))
     period_row = cur.fetchone()
     if not period_row:
-        cur.close(); conn.close()
+        cur.close(); _return_conn(conn)
         return jsonify({'error': 'Invalid period selected.'}), 400
 
     force = data.get('force', False)
     can_mark, window_type, message = _check_time_window(period_row[0], period_row[1])
     if not can_mark and not force:
-        cur.close(); conn.close()
+        cur.close(); _return_conn(conn)
         return jsonify({'error': f'Attendance marking not available now. {message}'}), 403
     if force:
         window_type = 'forced'
 
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
 
     # ── Process image and mark attendance (reuse existing logic) ───────────
     filename = _now_ist().strftime('%H-%M-%S') + '.jpg'
@@ -2446,7 +2472,7 @@ def teacher_mark_attendance():
                         VALUES (%s, %s, %s, %s, %s)
                     """, (_today_ist(), std_id, img_path, int(section_id), int(period_id)))
                     newly_marked_ids.append(std_id)
-            conn.commit(); cur.close(); conn.close()
+            conn.commit(); cur.close(); _return_conn(conn)
 
         # Build faces array for frontend canvas overlay
         faces_for_frontend = []
@@ -2474,7 +2500,7 @@ def teacher_mark_attendance():
             conn = get_conn(); cur = conn.cursor()
             cur.execute('SELECT std_id, name, email FROM student WHERE std_id = ANY(%s)', (all_ids,))
             students_present = [{'id': r[0], 'name': r[1], 'email': r[2]} for r in cur.fetchall()]
-            cur.close(); conn.close()
+            cur.close(); _return_conn(conn)
 
         # Get processed image dimensions for frontend coordinate mapping
         img_h, img_w = img.shape[:2] if img is not None else (720, 1280)
@@ -2521,7 +2547,7 @@ def api_teacher_get_report_schedules():
         WHERE rs.teacher_id = %s ORDER BY rs.created_at DESC
     """, (teacher_id,))
     rows = cur.fetchall()
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
     schedules = [{'id': r[0], 'section_id': r[1], 'frequency': r[2], 'time': str(r[3])[:5],
                   'include_parents': r[4], 'active': r[5], 'created_at': str(r[6]),
                   'section_name': f"{r[7] or 'Unknown'} ({r[8] or ''})"} for r in rows]
@@ -2548,7 +2574,7 @@ def api_teacher_create_report_schedule():
         VALUES (%s, %s, %s, %s, %s, true) RETURNING id
     """, (teacher_id, int(section_id), frequency, send_time, include_parents))
     new_id = cur.fetchone()[0]
-    conn.commit(); cur.close(); conn.close()
+    conn.commit(); cur.close(); _return_conn(conn)
     return jsonify({'id': new_id, 'message': 'Schedule created'}), 201
 
 
@@ -2559,7 +2585,7 @@ def api_teacher_delete_report_schedule(schedule_id):
     teacher_id = session.get('user_id')
     conn = get_conn(); cur = conn.cursor()
     cur.execute('DELETE FROM report_schedules WHERE id=%s AND teacher_id=%s', (schedule_id, teacher_id))
-    conn.commit(); cur.close(); conn.close()
+    conn.commit(); cur.close(); _return_conn(conn)
     return jsonify({'message': 'Schedule deleted'})
 
 
@@ -2570,7 +2596,7 @@ def api_teacher_toggle_report_schedule(schedule_id):
     teacher_id = session.get('user_id')
     conn = get_conn(); cur = conn.cursor()
     cur.execute('UPDATE report_schedules SET active = NOT active WHERE id=%s AND teacher_id=%s', (schedule_id, teacher_id))
-    conn.commit(); cur.close(); conn.close()
+    conn.commit(); cur.close(); _return_conn(conn)
     return jsonify({'message': 'Schedule toggled'})
 
 
@@ -2608,7 +2634,7 @@ def api_teacher_liveness_enable():
         if row:
             period_id = row[0]
         else:
-            cur.close(); conn.close()
+            cur.close(); _return_conn(conn)
             return jsonify({'error': 'No active period right now for this section'}), 400
 
     # Check if already active
@@ -2618,7 +2644,7 @@ def api_teacher_liveness_enable():
     """, (int(section_id), int(period_id)))
     existing = cur.fetchone()
     if existing:
-        cur.close(); conn.close()
+        cur.close(); _return_conn(conn)
         return jsonify({'session_id': existing[0], 'message': 'Already active'})
 
     cur.execute("""
@@ -2626,7 +2652,7 @@ def api_teacher_liveness_enable():
         VALUES (%s, %s, %s, %s) RETURNING id
     """, (int(section_id), int(period_id), interval, session.get('user_id')))
     session_id = cur.fetchone()[0]
-    conn.commit(); cur.close(); conn.close()
+    conn.commit(); cur.close(); _return_conn(conn)
     return jsonify({'session_id': session_id, 'message': 'Monitoring enabled'})
 
 
@@ -2643,7 +2669,7 @@ def api_teacher_liveness_disable():
         cur.execute("UPDATE engagement_sessions SET is_active=FALSE, ended_at=NOW() WHERE id=%s", (int(session_id_val),))
     elif section_id:
         cur.execute("UPDATE engagement_sessions SET is_active=FALSE, ended_at=NOW() WHERE section_id=%s AND is_active=TRUE", (int(section_id),))
-    conn.commit(); cur.close(); conn.close()
+    conn.commit(); cur.close(); _return_conn(conn)
     return jsonify({'message': 'Monitoring disabled'})
 
 
@@ -2724,7 +2750,7 @@ def api_teacher_liveness_status():
         WHERE section_id=%s AND is_active=TRUE ORDER BY started_at DESC LIMIT 1
     """, (int(section_id),))
     sess = cur.fetchone()
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
 
     return jsonify({
         'active': sess is not None,
@@ -2753,7 +2779,7 @@ def teacher_liveness():
         ORDER BY es.started_at DESC
     """, (session.get('user_id'),))
     active_sessions = cur.fetchall()
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
     return render_template('teacher/liveness.html', batches=batches, active_sessions=active_sessions)
 
 
@@ -2767,7 +2793,7 @@ def api_teacher_camera_status(section_id):
         FROM camera_streams WHERE section_id=%s
     """, (section_id,))
     camera = cur.fetchone()
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
     if camera:
         return jsonify({
             'has_camera': True,
@@ -2794,7 +2820,7 @@ def teacher_liveness_enable():
     conn = get_conn(); cur = conn.cursor()
     cur.execute('SELECT id FROM camera_streams WHERE section_id=%s AND is_active=TRUE', (section_id,))
     if not cur.fetchone():
-        cur.close(); conn.close()
+        cur.close(); _return_conn(conn)
         flash('No active camera found for this classroom. Please contact admin.', 'danger')
         return redirect(url_for('teacher_liveness'))
 
@@ -2804,7 +2830,7 @@ def teacher_liveness_enable():
         WHERE section_id=%s AND period_id=%s AND is_active=TRUE
     """, (section_id, period_id))
     if cur.fetchone():
-        cur.close(); conn.close()
+        cur.close(); _return_conn(conn)
         flash('Monitoring already active for this section/period.', 'info')
         return redirect(url_for('teacher_liveness'))
 
@@ -2812,7 +2838,7 @@ def teacher_liveness_enable():
         INSERT INTO engagement_sessions (section_id, period_id, capture_interval, started_by)
         VALUES (%s, %s, %s, %s)
     """, (section_id, period_id, interval, session.get('user_id')))
-    conn.commit(); cur.close(); conn.close()
+    conn.commit(); cur.close(); _return_conn(conn)
     flash('Liveness & engagement monitoring enabled!', 'success')
     return redirect(url_for('teacher_liveness'))
 
@@ -2829,7 +2855,7 @@ def teacher_liveness_disable():
         UPDATE engagement_sessions SET is_active=FALSE, ended_at=NOW()
         WHERE id=%s AND started_by=%s
     """, (session_id, session.get('user_id')))
-    conn.commit(); cur.close(); conn.close()
+    conn.commit(); cur.close(); _return_conn(conn)
     flash('Monitoring disabled.', 'success')
     return redirect(url_for('teacher_liveness'))
 
@@ -2863,13 +2889,13 @@ def teacher_liveness_capture():
         """, (session_id,))
         sess = cur.fetchone()
         if not sess:
-            cur.close(); conn.close()
+            cur.close(); _return_conn(conn)
             return jsonify({'error': 'Session not active'}), 404
         section_id, period_id = sess
 
         _load_ai_modules()
         if analyze_engagement is None:
-            cur.close(); conn.close()
+            cur.close(); _return_conn(conn)
             return jsonify({'error': 'AI modules not available (lightweight mode)'}), 503
 
         engagement = analyze_engagement(img)
@@ -2907,7 +2933,7 @@ def teacher_liveness_capture():
             engagement.confused_pct, engagement.distracted_pct,
             engagement.avg_engagement_score
         ))
-        conn.commit(); cur.close(); conn.close()
+        conn.commit(); cur.close(); _return_conn(conn)
 
         return jsonify(_serialize({
             'success': True,
@@ -2970,7 +2996,7 @@ def teacher_engagement():
     classes = cur.fetchall()
     cur.execute('SELECT section_id, name, class_id FROM section ORDER BY name')
     sections = cur.fetchall()
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
 
     return render_template('teacher/engagement.html', logs=logs, batches=batches,
                            classes=classes, sections=sections,
@@ -3003,7 +3029,7 @@ def teacher_reports():
         ORDER BY rs.is_active DESC, rs.id DESC
     """, (session.get('user_id'),))
     schedules = cur.fetchall()
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
 
     return render_template('teacher/reports.html', batches=batches,
                            branches=branches, schedules=schedules)
@@ -3083,7 +3109,7 @@ def teacher_send_report():
                 if stu[6]:  # parent_email exists
                     parent_map[stu[0]] = stu[6]
 
-        cur.close(); conn.close()
+        cur.close(); _return_conn(conn)
 
         if not hod_recipients and not parent_map:
             return jsonify({'error': 'No recipients found. Please ensure teachers are registered and students have parent emails.'}), 400
@@ -3441,7 +3467,7 @@ def teacher_schedule_report():
           int(class_id) if class_id else None,
           int(section_id) if section_id else None,
           send_to_authorities, send_to_parents, next_send))
-    conn.commit(); cur.close(); conn.close()
+    conn.commit(); cur.close(); _return_conn(conn)
     flash(f'{frequency.capitalize()} report schedule created!', 'success')
     return redirect(url_for('teacher_reports'))
 
@@ -3452,7 +3478,7 @@ def teacher_delete_schedule(schedule_id):
     conn = get_conn(); cur = conn.cursor()
     cur.execute('DELETE FROM report_schedule WHERE id=%s AND created_by=%s',
                (schedule_id, session.get('user_id')))
-    conn.commit(); cur.close(); conn.close()
+    conn.commit(); cur.close(); _return_conn(conn)
     flash('Schedule removed.', 'success')
     return redirect(url_for('teacher_reports'))
 
@@ -3465,7 +3491,7 @@ def teacher_toggle_schedule(schedule_id):
         UPDATE report_schedule SET is_active = NOT is_active
         WHERE id=%s AND created_by=%s
     """, (schedule_id, session.get('user_id')))
-    conn.commit(); cur.close(); conn.close()
+    conn.commit(); cur.close(); _return_conn(conn)
     flash('Schedule updated.', 'success')
     return redirect(url_for('teacher_reports'))
 
@@ -3494,7 +3520,7 @@ def api_college_dashboard():
     teacher_count = cur.fetchone()[0]
     cur.execute('SELECT COUNT(*) FROM engagement_sessions WHERE is_active=TRUE')
     active_sessions = cur.fetchone()[0]
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
     return jsonify({
         'today_count': today_count, 'total_students': total_students,
         'class_count': class_count, 'batch_count': batch_count,
@@ -3510,7 +3536,7 @@ def api_college_dashboard():
 def api_college_batches():
     conn = get_conn(); cur = conn.cursor()
     cur.execute('SELECT batch_id, passing_year, name FROM batch ORDER BY passing_year DESC')
-    rows = cur.fetchall(); cur.close(); conn.close()
+    rows = cur.fetchall(); cur.close(); _return_conn(conn)
     return jsonify([{'id': r[0], 'year': r[1], 'name': r[2]} for r in rows])
 
 
@@ -3527,7 +3553,7 @@ def api_college_add_batch():
         cur.execute('INSERT INTO batch (name, passing_year) VALUES (%s, %s) RETURNING batch_id',
                     (name, int(year)))
         batch_id = cur.fetchone()[0]
-        conn.commit(); cur.close(); conn.close()
+        conn.commit(); cur.close(); _return_conn(conn)
         return jsonify({'id': batch_id, 'name': name, 'year': int(year)}), 201
     except psycopg2.errors.UniqueViolation:
         return jsonify({'error': 'Batch with this year already exists'}), 409
@@ -3563,7 +3589,7 @@ def api_college_delete_batch(batch_id):
         conn.rollback()
         return jsonify({'error': str(e)}), 500
     finally:
-        cur.close(); conn.close()
+        cur.close(); _return_conn(conn)
     return jsonify({'success': True})
 
 
@@ -3581,7 +3607,7 @@ def api_college_branches():
         query += ' AND b.batch_id=%s'; params.append(int(batch_id))
     query += ' ORDER BY ba.passing_year DESC NULLS LAST, b.name'
     cur.execute(query, params)
-    rows = cur.fetchall(); cur.close(); conn.close()
+    rows = cur.fetchall(); cur.close(); _return_conn(conn)
     return jsonify([{'id': r[0], 'name': r[1], 'code': r[2], 'hod_name': r[3], 'hod_email': r[4],
                      'batch_id': r[5], 'batch_name': r[6], 'batch_year': r[7]} for r in rows])
 
@@ -3605,7 +3631,7 @@ def api_college_add_branch():
                        RETURNING branch_id''',
                     (name, code or None, hod_name or None, hod_email or None, int(batch_id)))
         branch_id = cur.fetchone()[0]
-        conn.commit(); cur.close(); conn.close()
+        conn.commit(); cur.close(); _return_conn(conn)
         return jsonify({'id': branch_id, 'name': name, 'code': code, 'batch_id': int(batch_id)}), 201
     except psycopg2.errors.UniqueViolation:
         return jsonify({'error': 'Branch already exists'}), 409
@@ -3621,7 +3647,7 @@ def api_college_update_branch(branch_id):
     cur.execute('''UPDATE branch SET name=COALESCE(%s,name), code=COALESCE(%s,code),
                    hod_name=%s, hod_email=%s WHERE branch_id=%s''',
                 (data.get('name'), data.get('code'), data.get('hod_name'), data.get('hod_email'), branch_id))
-    conn.commit(); cur.close(); conn.close()
+    conn.commit(); cur.close(); _return_conn(conn)
     return jsonify({'success': True})
 
 
@@ -3650,7 +3676,7 @@ def api_college_delete_branch(branch_id):
         conn.rollback()
         return jsonify({'error': str(e)}), 500
     finally:
-        cur.close(); conn.close()
+        cur.close(); _return_conn(conn)
     return jsonify({'success': True})
 
 
@@ -3675,7 +3701,7 @@ def api_college_classes():
         query += ' AND c.branch_id=%s'; params.append(int(branch_id))
     query += ' ORDER BY c.name'
     cur.execute(query, params)
-    rows = cur.fetchall(); cur.close(); conn.close()
+    rows = cur.fetchall(); cur.close(); _return_conn(conn)
     return jsonify([{'id': r[0], 'name': r[1], 'batch_id': r[2], 'branch_id': r[3],
                      'batch_name': r[4], 'branch_name': r[5],
                      'section_count': r[6], 'student_count': r[7]} for r in rows])
@@ -3695,7 +3721,7 @@ def api_college_add_class():
         cur.execute('INSERT INTO class (name, batch_id, branch_id) VALUES (%s, %s, %s) RETURNING class_id',
                     (name, int(batch_id) if batch_id else None, int(branch_id) if branch_id else None))
         class_id = cur.fetchone()[0]
-        conn.commit(); cur.close(); conn.close()
+        conn.commit(); cur.close(); _return_conn(conn)
         return jsonify({'id': class_id, 'name': name}), 201
     except psycopg2.errors.UniqueViolation:
         return jsonify({'error': 'Class already exists for this batch/branch'}), 409
@@ -3726,7 +3752,7 @@ def api_college_delete_class(class_id):
         conn.rollback()
         return jsonify({'error': str(e)}), 500
     finally:
-        cur.close(); conn.close()
+        cur.close(); _return_conn(conn)
     return jsonify({'success': True})
 
 
@@ -3745,7 +3771,7 @@ def api_college_sections():
         query += ' AND s.class_id=%s'; params.append(int(class_id))
     query += ' ORDER BY c.name, s.name'
     cur.execute(query, params)
-    rows = cur.fetchall(); cur.close(); conn.close()
+    rows = cur.fetchall(); cur.close(); _return_conn(conn)
     return jsonify([{'id': r[0], 'name': r[1], 'class_id': r[2], 'class_name': r[3], 'student_count': r[4]} for r in rows])
 
 
@@ -3762,7 +3788,7 @@ def api_college_add_section():
         cur.execute('INSERT INTO section (class_id, name) VALUES (%s, %s) RETURNING section_id',
                     (int(class_id), name))
         section_id = cur.fetchone()[0]
-        conn.commit(); cur.close(); conn.close()
+        conn.commit(); cur.close(); _return_conn(conn)
         return jsonify({'id': section_id, 'name': name}), 201
     except psycopg2.errors.UniqueViolation:
         return jsonify({'error': 'Section already exists in this class'}), 409
@@ -3789,7 +3815,7 @@ def api_college_delete_section(section_id):
         conn.rollback()
         return jsonify({'error': str(e)}), 500
     finally:
-        cur.close(); conn.close()
+        cur.close(); _return_conn(conn)
     return jsonify({'success': True})
 
 
@@ -3801,7 +3827,7 @@ def api_college_timetable(section_id):
     conn = get_conn(); cur = conn.cursor()
     cur.execute('''SELECT tt_id, day_of_week, period_name, teacher_name, from_time, to_time, is_recess
                    FROM timetable WHERE section_id=%s ORDER BY day_of_week, from_time''', (section_id,))
-    rows = cur.fetchall(); cur.close(); conn.close()
+    rows = cur.fetchall(); cur.close(); _return_conn(conn)
     return jsonify([{
         'id': r[0], 'day': r[1], 'period_name': r[2], 'teacher_name': r[3],
         'from_time': str(r[4])[:5], 'to_time': str(r[5])[:5], 'is_recess': r[6]
@@ -3825,7 +3851,7 @@ def api_college_add_timetable_entry(section_id):
                    VALUES (%s,%s,%s,%s,%s,%s,%s) RETURNING tt_id''',
                 (section_id, int(day), period_name, teacher_name or None, from_time, to_time, is_recess))
     tt_id = cur.fetchone()[0]
-    conn.commit(); cur.close(); conn.close()
+    conn.commit(); cur.close(); _return_conn(conn)
     return jsonify({'id': tt_id, 'period_name': period_name}), 201
 
 
@@ -3877,7 +3903,7 @@ def api_college_generate_timetable(section_id):
                 entries.append({'day': day, 'period': p, 'from': current.strftime('%H:%M'), 'to': period_end.strftime('%H:%M')})
                 current = period_end
 
-        conn.commit(); cur.close(); conn.close()
+        conn.commit(); cur.close(); _return_conn(conn)
         return jsonify({'success': True, 'periods_created': len(entries), 'entries': entries})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -3894,7 +3920,7 @@ def api_college_update_timetable_entry(tt_id):
                    WHERE tt_id=%s''',
                 (data.get('period_name'), data.get('teacher_name'),
                  data.get('from_time'), data.get('to_time'), data.get('is_recess'), tt_id))
-    conn.commit(); cur.close(); conn.close()
+    conn.commit(); cur.close(); _return_conn(conn)
     return jsonify({'success': True})
 
 
@@ -3913,7 +3939,7 @@ def api_college_delete_timetable_entry(tt_id):
         conn.rollback()
         return jsonify({'error': str(e)}), 500
     finally:
-        cur.close(); conn.close()
+        cur.close(); _return_conn(conn)
     return jsonify({'success': True})
 
 
@@ -3933,7 +3959,7 @@ def api_college_teachers():
         query += " AND subjects ILIKE %s"; params.append(f"%{subject}%")
     query += " ORDER BY name"
     cur.execute(query, params)
-    rows = cur.fetchall(); cur.close(); conn.close()
+    rows = cur.fetchall(); cur.close(); _return_conn(conn)
     return jsonify([{'id': r[0], 'name': r[1], 'email': r[2],
                      'designation': r[3] or '', 'subjects': r[4] or ''} for r in rows])
 
@@ -3956,7 +3982,7 @@ def api_college_add_teacher():
                     (name, email, generate_password_hash(password), 'teacher',
                      designation or None, subjects or None))
         uid = cur.fetchone()[0]
-        conn.commit(); cur.close(); conn.close()
+        conn.commit(); cur.close(); _return_conn(conn)
         return jsonify({'id': uid, 'name': name, 'email': email,
                         'designation': designation, 'subjects': subjects}), 201
     except psycopg2.errors.UniqueViolation:
@@ -3986,7 +4012,7 @@ def api_college_update_teacher(teacher_id):
         params.append(teacher_id)
         cur.execute(f"UPDATE users SET {','.join(updates)} WHERE id=%s AND role='teacher'", params)
         conn.commit()
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
     return jsonify({'success': True})
 
 
@@ -3995,7 +4021,7 @@ def api_college_update_teacher(teacher_id):
 def api_college_delete_teacher(teacher_id):
     conn = get_conn(); cur = conn.cursor()
     cur.execute("DELETE FROM users WHERE id=%s AND role='teacher'", (teacher_id,))
-    conn.commit(); cur.close(); conn.close()
+    conn.commit(); cur.close(); _return_conn(conn)
     return jsonify({'success': True})
 
 
@@ -4019,7 +4045,7 @@ def api_college_students():
         query += ' AND st.section_id=%s'; params.append(int(section_id))
     query += ' ORDER BY c.name, s.name, st.roll_no, st.name'
     cur.execute(query, params)
-    rows = cur.fetchall(); cur.close(); conn.close()
+    rows = cur.fetchall(); cur.close(); _return_conn(conn)
     return jsonify([{
         'id': r[0], 'name': r[1], 'email': r[2], 'roll_no': r[3],
         'class_name': r[4], 'section_name': r[5], 'dob': str(r[6]) if r[6] else None,
@@ -4052,7 +4078,7 @@ def api_college_add_student():
                      int(section_id) if section_id else None,
                      dob or None, parent_email or None))
         std_id = cur.fetchone()[0]
-        conn.commit(); cur.close(); conn.close()
+        conn.commit(); cur.close(); _return_conn(conn)
 
         # Save photos if provided
         if photos:
@@ -4086,7 +4112,7 @@ def api_college_update_student(std_id):
         params.append(std_id)
         cur.execute(f"UPDATE student SET {','.join(updates)} WHERE std_id=%s", params)
         conn.commit()
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
     return jsonify({'success': True})
 
 
@@ -4104,7 +4130,7 @@ def api_college_delete_student(std_id):
         d = os.path.join(DATASET_DIR, name)
         if os.path.exists(d):
             shutil.rmtree(d)
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
     return jsonify({'success': True})
 
 
@@ -4209,7 +4235,7 @@ def api_college_bulk_register():
                 conn.rollback()
                 conn = get_conn(); cur = conn.cursor()
 
-        conn.commit(); cur.close(); conn.close()
+        conn.commit(); cur.close(); _return_conn(conn)
         return jsonify({'success': True, 'added': added, 'errors': errors})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -4248,7 +4274,7 @@ def api_college_attendance():
         query += ' AND c.batch_id=%s'; params.append(int(batch_id))
     query += ' ORDER BY a.date DESC, c.name, sec.name, st.roll_no'
     cur.execute(query, params)
-    rows = cur.fetchall(); cur.close(); conn.close()
+    rows = cur.fetchall(); cur.close(); _return_conn(conn)
     return jsonify([{
         'date': str(r[0]), 'name': r[1], 'roll_no': r[2], 'class_name': r[3],
         'section_name': r[4], 'period': r[5],
@@ -4311,7 +4337,7 @@ def api_college_attendance_download():
         att_query += ' AND a.student_id IN (SELECT std_id FROM student WHERE class_id=%s)'; att_params.append(int(class_id))
     cur.execute(att_query, att_params)
     att_records = cur.fetchall()
-    cur.close(); conn.close()
+    cur.close(); _return_conn(conn)
 
     # Build presence set
     present_set = set()
@@ -4369,7 +4395,7 @@ def api_college_liveness_sessions():
                    JOIN timetable t ON es.period_id=t.tt_id
                    LEFT JOIN users u ON es.started_by=u.id
                    ORDER BY es.is_active DESC, es.started_at DESC LIMIT 50''')
-    rows = cur.fetchall(); cur.close(); conn.close()
+    rows = cur.fetchall(); cur.close(); _return_conn(conn)
     return jsonify([{
         'id': r[0], 'class_name': r[1], 'section_name': r[2], 'period': r[3],
         'started_at': str(r[4]), 'interval': r[5], 'teacher': r[6], 'is_active': r[7]
@@ -4387,7 +4413,7 @@ def api_college_liveness_logs(session_id):
                    JOIN engagement_sessions es ON el.section_id=es.section_id AND el.period_id=es.period_id
                    WHERE es.id=%s
                    ORDER BY el.timestamp DESC LIMIT 100''', (session_id,))
-    rows = cur.fetchall(); cur.close(); conn.close()
+    rows = cur.fetchall(); cur.close(); _return_conn(conn)
     return jsonify([{
         'timestamp': str(r[0]), 'total_faces': r[1], 'attentive_pct': float(r[2]),
         'confused_pct': float(r[3]), 'distracted_pct': float(r[4]), 'avg_score': float(r[5])
@@ -4416,7 +4442,7 @@ if __name__ == '__main__':
                     FROM report_schedules rs WHERE rs.active = true
                 """)
                 schedules = cur.fetchall()
-                cur.close(); conn.close()
+                cur.close(); _return_conn(conn)
 
                 for sch in schedules:
                     sch_id, teacher_id, section_id, frequency, send_time, include_parents = sch

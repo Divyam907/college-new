@@ -17,6 +17,8 @@ if DATABASE_URL:
         "password": parsed.password,
         "host": parsed.hostname,
         "port": str(parsed.port or 5432),
+        "sslmode": "require",
+        "connect_timeout": 10,
     }
 else:
     DB_PARAMS = {
