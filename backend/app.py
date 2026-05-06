@@ -128,6 +128,8 @@ IMAGES_DIR  = os.path.join(BASE_DIR, 'images')
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'college_attendance_secret_key_2026')
 app.config['MAX_CONTENT_LENGTH'] = 64 * 1024 * 1024
+app.config['SESSION_PERMANENT'] = True
+app.config['PERMANENT_SESSION_LIFETIME'] = dt.timedelta(days=30)
 
 # ── CORS for production (frontend on different domain) ────────────────────────
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
@@ -873,6 +875,7 @@ def api_auth_login():
         return jsonify({'error': 'Invalid email or password'}), 401
     if role_hint and user[4] != role_hint:
         return jsonify({'error': f'This account is not a {role_hint} account'}), 403
+    session.permanent = True
     session.update(user_id=user[0], name=user[1], email=user[2], role=user[4])
     return jsonify({'id': user[0], 'name': user[1], 'email': user[2], 'role': user[4]})
 

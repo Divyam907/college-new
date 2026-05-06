@@ -17,7 +17,7 @@ services:
           name: autoattendance-db
           property: connectionString
       - key: SECRET_KEY
-        generateValue: true
+        value: "college_attendance_stable_secret_key_2026_xK9mP3qL"
       - key: PYTHON_VERSION
         value: "3.11.9"
       - key: RENDER
